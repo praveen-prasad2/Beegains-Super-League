@@ -11,9 +11,9 @@ export const CONFIG = {
 
   players: [
     ['Kiran', 'GK'], ['Dilshad', 'GK'], ['Safvan', 'GK'],
-    ['Shimal', 'DEF'], ['Ansar', 'DEF'], ['Savad', 'DEF'],
+    ['Shimal', 'CB'], ['Ansar', 'CB'], ['Savad', 'CB'],
     ['Nishan', 'MID'], ['Akhil', 'MID'], ['Riyas', 'MID'],
-    ['Ajnas', 'FWD'], ['Jyodish', 'FWD'], ['Shafeeq', 'FWD'],
+    ['Ajnas', 'ST'], ['Jyodish', 'ST'], ['Shafeeq', 'ST'],
     ['Jassim', 'RB'], ['Majeed', 'RB'], ['Praveen', 'RB'],
     ['Sulthan', 'LB'], ['Cherian', 'LB'], ['Nikhil', 'LB'],
   ] as [string, string][],
@@ -24,12 +24,15 @@ export const TEAM_COLORS = ['#4C9AFF', '#FF9F43', '#2EC4B6', '#E05BC1', '#F4D35E
 
 export const META: Record<string, { label: string; color: string }> = {
   GK: { label: 'Goalkeeper', color: '#F4D35E' },
-  DEF: { label: 'Defender', color: '#4C9AFF' },
+  CB: { label: 'Centre Back', color: '#4C9AFF' },
   MID: { label: 'Midfielder', color: '#2EC4B6' },
-  FWD: { label: 'Forward', color: '#FF7A1A' },
-  RB: { label: 'Right Defender', color: '#8C7AE6' },
-  LB: { label: 'Left Defender', color: '#E05BC1' },
+  ST: { label: 'Striker', color: '#FF7A1A' },
+  RB: { label: 'Right Back', color: '#8C7AE6' },
+  LB: { label: 'Left Back', color: '#E05BC1' },
 };
+
+/** Old position codes from earlier saves → current codes. */
+export const POSITION_RENAMES: Record<string, string> = { DEF: 'CB', FWD: 'ST' };
 
 export const STORAGE_KEY = 'bsl-2026-auction';
 

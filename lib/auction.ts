@@ -1,4 +1,4 @@
-import { CONFIG, STORAGE_KEY, steps } from './config';
+import { CONFIG, POSITION_RENAMES, STORAGE_KEY, steps } from './config';
 
 export type Lot = { name: string; pos: string; again: boolean };
 export type BidEntry = { team: number; value: number };
@@ -111,6 +111,11 @@ export function normalize(s: any): AuctionState | null {
       s.drawTimes = s.icons.map((x: number | null) => (x == null ? null : typeof s.drawAt === 'number' ? s.drawAt : 0));
     delete s.drawAt;
     if (typeof s.auto !== 'boolean') s.auto = false;
+    // Renamed positions (DEF → CB, FWD → ST).
+    const rename = (p: { pos?: string }) =>
+      p && typeof p.pos === 'string' && POSITION_RENAMES[p.pos] ? { ...p, pos: POSITION_RENAMES[p.pos] } : p;
+    s.queue = s.queue.map(rename);
+    s.bought = s.bought.map((list: { pos?: string }[]) => list.map(rename));
     if (!Array.isArray(s.prevIcons) || s.prevIcons.length !== n) s.prevIcons = null;
     return s as AuctionState;
   } catch {

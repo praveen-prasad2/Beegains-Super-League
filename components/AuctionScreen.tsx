@@ -3,6 +3,7 @@
 import { CONFIG, META, TEAM_COLORS, fmt, steps } from '@/lib/config';
 import { bidBlock, current, iconOf, locked, nextBid } from '@/lib/auction';
 import { useAuction } from './AuctionProvider';
+import EndPanel from './EndPanel';
 import Header from './Header';
 import PlayerArt from './PlayerArt';
 import Stage from './Stage';
@@ -17,6 +18,14 @@ export default function AuctionScreen() {
   const amount = nextBid(S);
   const placeBid = (team: number) => dispatch({ type: 'bid', team });
 
+  if (S.done)
+    return (
+      <Stage>
+        <Header />
+        <EndPanel S={S} />
+      </Stage>
+    );
+
   return (
     <>
       <Stage>
@@ -26,7 +35,7 @@ export default function AuctionScreen() {
           <div className="card player">
             <div className="art">
               <div>
-                <PlayerArt pos={cur.pos} color={m.color} />
+                <PlayerArt key={cur.pos} pos={cur.pos} color={m.color} />
               </div>
               <div className="block-tag">Now on the block</div>
             </div>

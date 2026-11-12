@@ -182,3 +182,34 @@ button:disabled{cursor:not-allowed;opacity:.4}
 .d-wait .d-q{font-size:160px}
 .d-hint{font-size:16px;font-weight:500;color:var(--muted)}
 .dcard.spinning{border-color:var(--line2)}
+
+/* ---------- bidding has ended ---------- */
+.end{position:relative;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:48px;padding:48px 64px;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 0%,#1E2E17 0%,var(--panel) 60%)}
+.end>*:not(.confetti){position:relative;animation:rise .7s cubic-bezier(.2,.9,.3,1) both}
+.end-teams{animation-delay:.15s !important}
+.end-foot{animation-delay:.3s !important}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.end-head{text-align:center}
+.end-kicker{font-size:16px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.end-title{margin-top:12px;font-weight:800;font-size:136px;line-height:.95;text-transform:uppercase;color:var(--accent)}
+.end-sub{margin-top:16px;font-size:24px;font-weight:600;color:var(--text)}
+.end-teams{display:grid;gap:24px;width:100%}
+.end-team{padding:24px 28px;border-radius:20px;background:rgba(10,17,14,.55);border:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.end-team-name{display:flex;align-items:center;gap:12px;font-weight:800;font-size:36px;line-height:1;text-transform:uppercase}
+.end-team-name .dot{width:16px;height:16px;border-radius:5px}
+.end-team-mgr{font-size:17px;color:var(--muted);font-weight:500}
+.end-team-mgr b{color:var(--text);font-weight:700}
+.end-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px;padding-top:16px;border-top:1px solid var(--line)}
+.end-stats .label{font-size:12px}
+.end-num{font-weight:700;font-size:30px;line-height:1;margin-top:8px}
+.end-num.accent{color:var(--accent)}
+.end-foot{display:flex;flex-direction:column;align-items:center;gap:18px}
+.end-unsold{font-size:17px;color:var(--muted)}
+.end-unsold b{color:var(--text);font-weight:600}
+.end-btn{display:inline-flex;align-items:center;height:76px;padding:0 48px;border-radius:18px;background:var(--accent);color:var(--bg);font-weight:800;font-size:32px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none}
+.end-btn:hover{filter:brightness(1.08)}
+.confetti{position:absolute;inset:0;pointer-events:none}
+.confetti span{position:absolute;top:-24px;width:10px;height:18px;border-radius:3px;opacity:.85;animation:fall linear infinite}
+@keyframes fall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(900px) rotate(540deg)}}
+@media (prefers-reduced-motion:reduce){.confetti{display:none}.end>*{animation:none !important}}
