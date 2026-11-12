@@ -8,7 +8,7 @@ import Header from './Header';
 import Stage from './Stage';
 
 export default function TeamsScreen() {
-  const { S } = useAuction();
+  const { S, teams } = useAuction();
   const cur = current(S);
   const m = META[cur.pos] || META.MID;
   const n = CONFIG.teams.length;
@@ -23,14 +23,14 @@ export default function TeamsScreen() {
   else if (S.sold && S.leader != null && S.bid != null)
     nowText = (
       <>
-        {S.auto ? 'Allotted' : 'Sold'} to <b style={{ color: TEAM_COLORS[S.leader] }}>{CONFIG.teams[S.leader]}</b> for <b>{fmt(S.bid)}</b>
+        {S.auto ? 'Allotted' : 'Sold'} to <b style={{ color: TEAM_COLORS[S.leader] }}>{teams[S.leader]}</b> for <b>{fmt(S.bid)}</b>
       </>
     );
   else if (S.unsold) nowText = <>Unsold</>;
   else if (S.leader != null && S.bid != null)
     nowText = (
       <>
-        Current bid <b>{fmt(S.bid)}</b> · <b style={{ color: TEAM_COLORS[S.leader] }}>{CONFIG.teams[S.leader]}</b>
+        Current bid <b>{fmt(S.bid)}</b> · <b style={{ color: TEAM_COLORS[S.leader] }}>{teams[S.leader]}</b>
       </>
     );
   else nowText = <>Waiting for the opening bid at {fmt(CONFIG.basePrice)}</>;
@@ -53,7 +53,7 @@ export default function TeamsScreen() {
       </div>
 
       <div className="teams" style={{ gridTemplateColumns: `repeat(${n},minmax(0,1fr))` }}>
-        {CONFIG.teams.map((t, i) => {
+        {teams.map((t, i) => {
           const list = S.bought[i];
           const open = Math.max(0, CONFIG.squadSize - list.length);
           const leading = revealed && S.leader === i && !S.done && !S.unsold;

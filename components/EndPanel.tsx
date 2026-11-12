@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import { CONFIG, TEAM_COLORS, fmt } from '@/lib/config';
 import { iconOf, purseLeft, type AuctionState } from '@/lib/auction';
+import { useAuction } from './AuctionProvider';
 
 const CONFETTI_COLORS = ['#C8F03C', '#FF7A1A', '#4C9AFF', '#2EC4B6', '#E05BC1', '#F4D35E'];
 
 /** Shown on the Live bid tab once every lot has been auctioned. */
 export default function EndPanel({ S }: { S: AuctionState }) {
+  const { teams } = useAuction();
   const signed = S.squad.reduce((a, b) => a + b, 0);
   const spent = S.spent.reduce((a, b) => a + b, 0);
   const boughtNames = new Set(S.bought.flat().map((p) => p.name));
@@ -38,7 +40,7 @@ export default function EndPanel({ S }: { S: AuctionState }) {
       </div>
 
       <div className="end-teams" style={{ gridTemplateColumns: `repeat(${CONFIG.teams.length},minmax(0,1fr))` }}>
-        {CONFIG.teams.map((t, i) => (
+        {teams.map((t, i) => (
           <div key={t} className="end-team">
             <div className="end-team-name cond">
               <span className="dot" style={{ background: TEAM_COLORS[i] }} />

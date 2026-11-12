@@ -2,7 +2,12 @@ import { CONFIG } from './config';
 
 /** A league match: home team index, away team index. */
 export type Pair = [number, number];
-export type Score = { h: number; a: number };
+/**
+ * One goal. side = which team it counts for (0 = home, 1 = away).
+ * og = own goal: scorer is from the other team and gets no goal credit.
+ */
+export type Goal = { side: 0 | 1; scorer: string; assist: string | null; og?: boolean };
+export type Score = { h: number; a: number; /** Goal-by-goal detail, entered on the Admin screen. */ goals?: Goal[] };
 export type FinalScore = Score & { /** Penalty-shootout winner when the final is level: 0 = home, 1 = away. */ pens: 0 | 1 | null };
 
 export type Tournament = {
@@ -112,3 +117,37 @@ export function normalizeTournament(x: any): Tournament {
     prevOrder: Array.isArray(x.prevOrder) && x.prevOrder.every(okPair) ? x.prevOrder : null,
   };
 }
+
+/** Every match in order: league matches (index 0..n-1) then the final ('final'). */
+export function allMatches(t: Tournament): { key: number | 'final'; label: string; teams: Pair | null; score: Score | null }[] {
+  const league = t.order.map((p, i) => ({ key: i as number | 'final', label: `M${i + 1}`, teams: p as Pair | null, score: t.results[i] }));
+  return [...league, { key: 'final', label: 'Final', teams: finalists(t), score: t.final }];
+}
+
+export type PlayerStat = { name: string; team: number; goals: number; assists: number };
+
+/** Goals and assists per player across the league and the final (own goals are not credited). */
+export function playerStats(t: Tournament): PlayerStat[] {
+  const map = new Map<string, PlayerStat>();
+  const get = (name: string, team: number) => {
+    const k = `${team}|${name.trim().toLowerCase()}`;
+    let s = map.get(k);
+    if (!s) map.set(k, (s = { name: name.trim(), team, goals: 0, assists: 0 }));
+    return s;
+  };
+  for (const m of allMatches(t)) {
+    if (!m.teams || !m.score?.goals) continue;
+    for (const g of m.score.goals) {
+      const team = m.teams[g.side];
+      if (g.og) continue;
+      if (g.scorer.trim()) get(g.scorer, team).goals++;
+      if (g.assist?.trim()) get(g.assist, team).assists++;
+    }
+  }
+  return [...map.values()];
+}
+
+export const topScorers = (t: Tournament) =>
+  playerStats(t).filter((p) => p.goals > 0).sort((x, y) => y.goals - x.goals || y.assists - x.assists || x.name.localeCompare(y.name));
+export const topAssists = (t: Tournament) =>
+  playerStats(t).filter((p) => p.assists > 0).sort((x, y) => y.assists - x.assists || y.goals - x.goals || x.name.localeCompare(y.name));

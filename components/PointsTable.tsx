@@ -2,9 +2,11 @@
 
 import { CONFIG, TEAM_COLORS } from '@/lib/config';
 import { type Tournament, leagueDone, table } from '@/lib/fixtures';
+import { useAuction } from './AuctionProvider';
 
 /** League standings; the top 2 rows are the final spots. */
 export default function PointsTable({ tour, big = false }: { tour: Tournament; big?: boolean }) {
+  const { teams } = useAuction();
   const rows = table(tour);
   const done = leagueDone(tour);
   return (
@@ -31,7 +33,7 @@ export default function PointsTable({ tour, big = false }: { tour: Tournament; b
               <td className="l">
                 <span className="fx-tteam">
                   <span className="dot" style={{ background: TEAM_COLORS[r.team] }} />
-                  {CONFIG.teams[r.team]}
+                  {teams[r.team]}
                   {k < 2 && done && <span className="fx-q">Final</span>}
                 </span>
               </td>

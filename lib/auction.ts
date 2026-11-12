@@ -35,7 +35,12 @@ export type AuctionState = {
   prevIcons: (number | null)[] | null;
   /** League fixtures, results and final. Kept when the auction is reset. */
   tour: Tournament;
+  /** Team names as set on the Admin screen (defaults to CONFIG.teams). */
+  teamNames: string[];
 };
+
+/** Team names to show, falling back to CONFIG for any blank one. */
+export const teamNames = (s: AuctionState) => CONFIG.teams.map((d, i) => s.teamNames?.[i]?.trim() || d);
 
 /** How long one team's draw spins before revealing (ms). */
 export const DRAW_SPIN = 2600;
@@ -125,6 +130,7 @@ export type Action =
   | { type: 'drawLot'; pick: number; at: number }
   | { type: 'drawFixtures'; order: Pair[]; at: number }
   | { type: 'clearFixtures' }
+  | { type: 'renameTeams'; names: string[] }
   | { type: 'result'; match: number; score: Score | null }
   | { type: 'finalResult'; score: FinalScore | null }
   | { type: 'load'; state: AuctionState };
@@ -143,6 +149,7 @@ export function fresh(): AuctionState {
     drawTimes: CONFIG.teams.map(() => null),
     prevIcons: null,
     tour: freshTournament(),
+    teamNames: [...CONFIG.teams],
   };
 }
 
@@ -186,6 +193,8 @@ export function normalize(s: any): AuctionState | null {
     s.bought = s.bought.map((list: { pos?: string }[]) => list.map(rename));
     if (!Array.isArray(s.prevIcons) || s.prevIcons.length !== n) s.prevIcons = null;
     s.tour = normalizeTournament(s.tour);
+    if (!Array.isArray(s.teamNames) || s.teamNames.length !== n || !s.teamNames.every((x: unknown) => typeof x === 'string'))
+      s.teamNames = [...CONFIG.teams];
     return s as AuctionState;
   } catch {
     return null;
@@ -267,7 +276,7 @@ export function reducer(s: AuctionState, a: Action): AuctionState {
     case 'reset': {
       // Remember this run's draw order (positions not drawn this run keep the older one).
       const drawnNow = Object.fromEntries(Object.entries(s.drawOrder).filter(([, names]) => names.length));
-      return { ...fresh(), prevDrawOrder: { ...s.prevDrawOrder, ...drawnNow }, tour: s.tour };
+      return { ...fresh(), prevDrawOrder: { ...s.prevDrawOrder, ...drawnNow }, tour: s.tour, teamNames: s.teamNames };
     }
     case 'step':
       return { ...s, step: a.step };
@@ -317,6 +326,10 @@ export function reducer(s: AuctionState, a: Action): AuctionState {
     case 'drawFixtures': {
       if (s.tour.order.length) return s;
       return { ...s, tour: { ...s.tour, order: a.order, drawAt: a.at, results: a.order.map(() => null), final: null } };
+    }
+    case 'renameTeams': {
+      if (a.names.length !== CONFIG.teams.length) return s;
+      return { ...s, teamNames: a.names.map((x, i) => x.trim().slice(0, 30) || CONFIG.teams[i]) };
     }
     case 'clearFixtures': {
       if (!s.tour.order.length) return s;

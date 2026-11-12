@@ -8,16 +8,19 @@ import Header from './Header';
 import Stage from './Stage';
 import PointsTable from './PointsTable';
 
-const Name = ({ t }: { t: number }) => (
-  <span className="pt-name">
-    <span className="dot" style={{ background: TEAM_COLORS[t] }} />
-    {CONFIG.teams[t]}
-  </span>
-);
+function Name({ t }: { t: number }) {
+  const { teams } = useAuction();
+  return (
+    <span className="pt-name">
+      <span className="dot" style={{ background: TEAM_COLORS[t] }} />
+      {teams[t]}
+    </span>
+  );
+}
 
-/** Display screen: standings, the final, and every league result. Results are entered on Fixtures. */
+/** Display screen: standings, the final, and every league result. Results are entered on Admin. */
 export default function PointsScreen() {
-  const { S } = useAuction();
+  const { S, teams } = useAuction();
   const T = S.tour;
   const total = T.order.length;
   const played = T.results.filter(Boolean).length;
@@ -34,11 +37,15 @@ export default function PointsScreen() {
           <div className="h-title">
             <span className="cond pt-title">Points table</span>
             <span className="count">
-              {total ? `${played} / ${total} played · ${done ? 'League complete' : 'Top 2 go to the Final'}` : 'Fixtures not drawn yet'}
+              {total
+                ? `${played} / ${total} played · ${done ? 'League complete' : 'Top 2 go to the Final'}`
+                : 'Fixtures not drawn yet'}
             </span>
           </div>
           <PointsTable tour={T} big />
-          <div className="fx-note pt-key">Win 3 · Draw 1 · Loss 0 · Ties split by goal difference, then goals scored, then head-to-head</div>
+          <div className="fx-note pt-key">
+            Win 3 · Draw 1 · Loss 0 · Ties split by goal difference, then goals scored, then head-to-head
+          </div>
         </div>
 
         <div className="fx-side">
@@ -61,23 +68,27 @@ export default function PointsScreen() {
               {fin ? <Name t={fin[1]} /> : <span className="fx-tbd cond">2nd place</span>}
             </div>
             {fin && T.final && T.final.h === T.final.a && T.final.pens != null && (
-              <div className="fx-note">Won on penalties by {CONFIG.teams[fin[T.final.pens]]}</div>
+              <div className="fx-note">Won on penalties by {teams[fin[T.final.pens]]}</div>
             )}
             {champ != null && (
               <div className="fx-champ">
                 <span className="d-tag">Champions</span>
                 <span className="fx-champ-name cond" style={{ color: TEAM_COLORS[champ] }}>
-                  {CONFIG.teams[champ]}
+                  {teams[champ]}
                 </span>
               </div>
             )}
-            {!fin && total > 0 && <div className="fx-note">Set once all {total} league matches are played ({total - played} to go)</div>}
+            {!fin && total > 0 && (
+              <div className="fx-note">
+                Set once all {total} league matches are played ({total - played} to go)
+              </div>
+            )}
           </div>
 
           <div className="card pt-results">
             <div className="h-title">
               <span className="cond">Results</span>
-              <Link href="/fixtures" className="fx-link">
+              <Link href="/admin" className="fx-link">
                 Enter results
               </Link>
             </div>

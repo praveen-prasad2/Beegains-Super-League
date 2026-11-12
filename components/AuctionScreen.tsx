@@ -10,7 +10,7 @@ import Stage from './Stage';
 import { useSpin } from './useSpin';
 
 export default function AuctionScreen() {
-  const { S, dispatch } = useAuction();
+  const { S, dispatch, teams } = useAuction();
   const n = CONFIG.teams.length;
 
   // The player for each lot is drawn at random; bidding opens once the draw has revealed them.
@@ -115,7 +115,7 @@ export default function AuctionScreen() {
                     <div key={`${S.idx}-${h.value}`} className={`row${i === 0 ? ' top' : ''}`}>
                       <div className="team">
                         <div className="dot" style={{ background: TEAM_COLORS[h.team] }} />
-                        {CONFIG.teams[h.team]}
+                        {teams[h.team]}
                       </div>
                       <div className="amt cond">{fmt(h.value)}</div>
                     </div>
@@ -138,7 +138,7 @@ export default function AuctionScreen() {
               <div className="leader">
                 <div className="dot" style={{ background: leader == null ? '#3A4D43' : TEAM_COLORS[leader] }} />
                 <div>
-                  {leader == null ? (revealed ? 'No bids yet' : 'Waiting for the draw') : CONFIG.teams[leader]}
+                  {leader == null ? (revealed ? 'No bids yet' : 'Waiting for the draw') : teams[leader]}
                   {leader != null && CONFIG.managers[leader] && (
                     <span className="mgr"> · {CONFIG.managers[leader]}</span>
                   )}
@@ -169,7 +169,7 @@ export default function AuctionScreen() {
             <div>
               <div className="small-label">Tap a team to place its bid</div>
               <div className="grid" style={{ gridTemplateColumns: `repeat(${Math.min(n, 4)},minmax(0,1fr))` }}>
-                {CONFIG.teams.map((t, i) => {
+                {teams.map((t, i) => {
                   const block = revealed ? bidBlock(S, i, amount) : '';
                   return (
                     <button
@@ -224,7 +224,7 @@ export default function AuctionScreen() {
                     {S.auto ? 'ALLOTTED' : 'SOLD'}
                   </div>
                   <div className="small">
-                    to {CONFIG.teams[S.leader]} · {fmt(S.bid)}
+                    to {teams[S.leader]} · {fmt(S.bid)}
                     {S.auto && ' (base price)'}
                   </div>
                 </div>
@@ -243,7 +243,7 @@ export default function AuctionScreen() {
         </div>
 
         <div className="purses" style={{ gridTemplateColumns: `repeat(${n},minmax(0,1fr))` }}>
-          {CONFIG.teams.map((t, i) => (
+          {teams.map((t, i) => (
             <div
               key={t}
               className={`purse${leader === i ? ' lead' : ''}`}

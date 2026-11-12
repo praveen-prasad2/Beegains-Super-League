@@ -8,7 +8,7 @@ import Header from './Header';
 import Stage from './Stage';
 
 export default function DrawScreen() {
-  const { S, dispatch } = useAuction();
+  const { S, dispatch, teams } = useAuction();
   const [now, setNow] = useState<number | null>(null);
   const pool = CONFIG.iconPlayers;
   const lastDraw = Math.max(0, ...S.drawTimes.map((x) => x ?? 0));
@@ -83,7 +83,7 @@ export default function DrawScreen() {
       </div>
 
       <div className="draw-grid" style={{ gridTemplateColumns: `repeat(${CONFIG.teams.length},minmax(0,1fr))` }}>
-        {CONFIG.teams.map((t, i) => {
+        {teams.map((t, i) => {
           const revealed = isRevealed(i);
           const spinning = isSpinning(i);
           const undrawn = S.icons[i] == null;
@@ -141,7 +141,7 @@ export default function DrawScreen() {
             <span key={p} className={`pool-chip${shown ? ' taken' : ''}`}>
               {shown && <span className="dot" style={{ background: TEAM_COLORS[team] }} />}
               {p}
-              {shown && <span className="pool-team">→ {CONFIG.teams[team]}</span>}
+              {shown && <span className="pool-team">→ {teams[team]}</span>}
             </span>
           );
         })}

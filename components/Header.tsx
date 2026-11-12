@@ -13,8 +13,15 @@ const TABS = [
   { href: '/', label: 'Live bid' },
   { href: '/teams', label: 'Teams' },
   { href: '/fixtures', label: 'Fixtures' },
-  { href: '/points', label: 'Points table' },
+  { href: '/points', label: 'Points' },
+  { href: '/stats', label: 'Stats' },
+  { href: '/admin', label: 'Admin' },
 ];
+
+/** Auction screens (header title reads "Player Auction"); the rest are league screens. */
+const AUCTION = ['/', '/teams', '/draw'];
+/** Pages that show the auction's player counter and status chip. */
+const AUCTION_PAGES = ['/'];
 
 const SYNC_LABEL = { connecting: 'Connecting', saving: 'Saving', saved: 'Saved', offline: 'Offline' };
 const SYNC_TITLE = {
@@ -36,7 +43,7 @@ export default function Header() {
         <Image src="/bsl-logo.png" alt="BSL – Beegains Super League 2026" width={4000} height={926} priority />
         <div className="divider" />
         <div>
-          <div className="title cond">Player Auction</div>
+          <div className="title cond">{AUCTION.includes(path) ? 'Player Auction' : 'League'}</div>
           <div className="sub">Season 2026 · Beegains</div>
         </div>
       </div>
@@ -48,12 +55,19 @@ export default function Header() {
             </Link>
           ))}
         </nav>
-        <div className="chip">
-          Player <b>{pad(Math.min(S.idx + 1, S.queue.length))} / {pad(S.queue.length)}</b>
-        </div>
-        <div className="status" style={{ background: status.bg, color: status.fg }}>
-          {status.label}
-        </div>
+        {AUCTION_PAGES.includes(path) && (
+          <>
+            <div className="chip">
+              Player{' '}
+              <b>
+                {pad(Math.min(S.idx + 1, S.queue.length))} / {pad(S.queue.length)}
+              </b>
+            </div>
+            <div className="status" style={{ background: status.bg, color: status.fg }}>
+              {status.label}
+            </div>
+          </>
+        )}
         <div className={`sync ${sync}`} title={SYNC_TITLE[sync]}>
           <span className="sync-dot" />
           {SYNC_LABEL[sync]}

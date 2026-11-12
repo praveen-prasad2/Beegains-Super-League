@@ -1,12 +1,12 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useReducer, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { STORAGE_KEY } from '@/lib/config';
-import { type Action, type AuctionState, fresh, loadState, normalize, reducer, saveState } from '@/lib/auction';
+import { type Action, type AuctionState, fresh, loadState, normalize, reducer, saveState, teamNames } from '@/lib/auction';
 
 export type SyncStatus = 'connecting' | 'saved' | 'saving' | 'offline';
 
-type Ctx = { S: AuctionState; dispatch: (a: Action) => void; ready: boolean; sync: SyncStatus };
+type Ctx = { S: AuctionState; dispatch: (a: Action) => void; ready: boolean; sync: SyncStatus; /** Current team names. */ teams: string[] };
 const AuctionContext = createContext<Ctx | null>(null);
 
 const API = '/api/auction';
@@ -49,7 +49,8 @@ export default function AuctionProvider({ children }: { children: React.ReactNod
         });
         if (!r.ok) throw new Error(`save failed: ${r.status}`);
         const d = await r.json();
-        version.current = d.version;
+        // If the server ignored admin-only changes (not logged in), force a reload of its copy.
+        version.current = d.corrected ? 0 : d.version;
         if (queued.current === st) queued.current = null;
       }
       setSync('saved');
@@ -124,7 +125,8 @@ export default function AuctionProvider({ children }: { children: React.ReactNod
     }
   }, [S, flush]);
 
-  return <AuctionContext.Provider value={{ S, dispatch, ready, sync }}>{children}</AuctionContext.Provider>;
+  const teams = useMemo(() => teamNames(S), [S]);
+  return <AuctionContext.Provider value={{ S, dispatch, ready, sync, teams }}>{children}</AuctionContext.Provider>;
 }
 
 export function useAuction() {
