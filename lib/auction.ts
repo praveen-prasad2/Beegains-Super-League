@@ -17,6 +17,10 @@ export type AuctionState = {
   auto: boolean;
   /** When the current lot's player was drawn (ms); null = not drawn yet, bidding can't start. */
   lotDrawAt: number | null;
+  /** First-round draw order this run, per position (names in the order they were drawn). */
+  drawOrder: Record<string, string[]>;
+  /** Draw order from before the last reset; the next run avoids repeating it. */
+  prevDrawOrder: Record<string, string[]>;
   /** queue[idx..] is the pot still to be auctioned; drawing swaps the picked player into queue[idx]. */
   queue: Lot[];
   spent: number[];
@@ -54,9 +58,27 @@ export function lotCandidates(s: AuctionState): number[] {
   return group.filter((i) => posRank(s.queue[i].pos) === rank);
 }
 
+/**
+ * Draw the next player at random from the current position group.
+ * After a reset, each position avoids last run's order: its first pick differs from last
+ * time's first pick, and the sequence never ends up identical to last time's.
+ */
 export function pickLot(s: AuctionState): number | null {
   const c = lotCandidates(s);
-  return c.length ? c[Math.floor(Math.random() * c.length)] : null;
+  if (!c.length) return null;
+  let pool = c;
+  const { pos, again } = s.queue[c[0]];
+  const prev = s.prevDrawOrder[pos];
+  if (!again && prev?.length) {
+    const sofar = s.drawOrder[pos] ?? [];
+    // Still following last run's order exactly? Then don't pick last run's next player.
+    const repeating = sofar.every((name, k) => prev[k] === name);
+    if (repeating && prev[sofar.length]) {
+      const avoid = c.filter((i) => s.queue[i].name !== prev[sofar.length]);
+      if (avoid.length) pool = avoid;
+    }
+  }
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 export const iconOf = (s: AuctionState, team: number) => {
@@ -104,6 +126,8 @@ export function fresh(): AuctionState {
   return {
     idx: 0, done: false, bid: null, leader: null, step: 0, history: [], sold: false, unsold: false, auto: false,
     lotDrawAt: null,
+    drawOrder: {},
+    prevDrawOrder: {},
     queue: CONFIG.players.map(([name, pos]) => ({ name, pos, again: false })),
     spent: CONFIG.teams.map(() => 0),
     squad: CONFIG.teams.map(() => 0),
@@ -144,6 +168,8 @@ export function normalize(s: any): AuctionState | null {
     if (typeof s.auto !== 'boolean') s.auto = false;
     // Renamed positions (DEF → CB, FWD → ST).
     // Saves from before the player draw: a lot already in progress counts as drawn.
+    if (!s.drawOrder || typeof s.drawOrder !== 'object') s.drawOrder = {};
+    if (!s.prevDrawOrder || typeof s.prevDrawOrder !== 'object') s.prevDrawOrder = {};
     if (typeof s.lotDrawAt !== 'number' && s.lotDrawAt !== null)
       s.lotDrawAt = s.idx > 0 || s.bid != null || s.sold || s.unsold || s.done ? 0 : null;
     const rename = (p: { pos?: string }) =>
@@ -229,8 +255,11 @@ export function reducer(s: AuctionState, a: Action): AuctionState {
   switch (a.type) {
     case 'load':
       return a.state;
-    case 'reset':
-      return fresh();
+    case 'reset': {
+      // Remember this run's draw order (positions not drawn this run keep the older one).
+      const drawnNow = Object.fromEntries(Object.entries(s.drawOrder).filter(([, names]) => names.length));
+      return { ...fresh(), prevDrawOrder: { ...s.prevDrawOrder, ...drawnNow } };
+    }
     case 'step':
       return { ...s, step: a.step };
     case 'drawTeam': {
@@ -281,7 +310,11 @@ export function reducer(s: AuctionState, a: Action): AuctionState {
       if (s.done || s.lotDrawAt != null || !lotCandidates(s).includes(a.pick)) return s;
       const queue = [...s.queue];
       [queue[s.idx], queue[a.pick]] = [queue[a.pick], queue[s.idx]];
-      return autoAllot({ ...s, queue, lotDrawAt: a.at });
+      const lot = queue[s.idx];
+      const drawOrder = lot.again
+        ? s.drawOrder
+        : { ...s.drawOrder, [lot.pos]: [...(s.drawOrder[lot.pos] ?? []), lot.name] };
+      return autoAllot({ ...s, queue, lotDrawAt: a.at, drawOrder });
     }
   }
 }
