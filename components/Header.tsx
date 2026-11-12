@@ -12,6 +12,8 @@ const TABS = [
   { href: '/draw', label: 'Icon draw' },
   { href: '/', label: 'Live bid' },
   { href: '/teams', label: 'Teams' },
+  { href: '/fixtures', label: 'Fixtures' },
+  { href: '/points', label: 'Points table' },
 ];
 
 const SYNC_LABEL = { connecting: 'Connecting', saving: 'Saving', saved: 'Saved', offline: 'Offline' };
@@ -23,15 +25,10 @@ const SYNC_TITLE = {
 };
 
 export default function Header() {
-  const { S, dispatch, sync } = useAuction();
+  const { S, sync } = useAuction();
   const path = usePathname();
   const { spinning } = useSpin(S.lotDrawAt, LOT_SPIN);
   const status = spinning ? { label: 'Drawing player…', bg: '#F4D35E', fg: '#0A110E' } : statusOf(S);
-
-  const onReset = () => {
-    if (confirm('Reset the whole auction? All bids, purchases and team squads will be cleared.'))
-      dispatch({ type: 'reset' });
-  };
 
   return (
     <div className="header">
@@ -61,9 +58,6 @@ export default function Header() {
           <span className="sync-dot" />
           {SYNC_LABEL[sync]}
         </div>
-        <button type="button" className="reset-btn" onClick={onReset}>
-          Reset
-        </button>
       </div>
     </div>
   );

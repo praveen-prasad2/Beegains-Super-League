@@ -1,4 +1,5 @@
 import { CONFIG, POSITION_ORDER, POSITION_RENAMES, STORAGE_KEY, steps } from './config';
+import { type FinalScore, type Pair, type Score, type Tournament, finalists, freshTournament, normalizeTournament } from './fixtures';
 
 export type Lot = { name: string; pos: string; again: boolean };
 export type BidEntry = { team: number; value: number };
@@ -32,6 +33,8 @@ export type AuctionState = {
   drawTimes: (number | null)[];
   /** The allocation before the last redraw; a redraw never gives a team the same icon again. */
   prevIcons: (number | null)[] | null;
+  /** League fixtures, results and final. Kept when the auction is reset. */
+  tour: Tournament;
 };
 
 /** How long one team's draw spins before revealing (ms). */
@@ -120,6 +123,10 @@ export type Action =
   | { type: 'drawTeam'; team: number; icon: number; at: number }
   | { type: 'redraw' }
   | { type: 'drawLot'; pick: number; at: number }
+  | { type: 'drawFixtures'; order: Pair[]; at: number }
+  | { type: 'clearFixtures' }
+  | { type: 'result'; match: number; score: Score | null }
+  | { type: 'finalResult'; score: FinalScore | null }
   | { type: 'load'; state: AuctionState };
 
 export function fresh(): AuctionState {
@@ -135,6 +142,7 @@ export function fresh(): AuctionState {
     icons: CONFIG.teams.map(() => null),
     drawTimes: CONFIG.teams.map(() => null),
     prevIcons: null,
+    tour: freshTournament(),
   };
 }
 
@@ -177,6 +185,7 @@ export function normalize(s: any): AuctionState | null {
     s.queue = s.queue.map(rename);
     s.bought = s.bought.map((list: { pos?: string }[]) => list.map(rename));
     if (!Array.isArray(s.prevIcons) || s.prevIcons.length !== n) s.prevIcons = null;
+    s.tour = normalizeTournament(s.tour);
     return s as AuctionState;
   } catch {
     return null;
@@ -258,7 +267,7 @@ export function reducer(s: AuctionState, a: Action): AuctionState {
     case 'reset': {
       // Remember this run's draw order (positions not drawn this run keep the older one).
       const drawnNow = Object.fromEntries(Object.entries(s.drawOrder).filter(([, names]) => names.length));
-      return { ...fresh(), prevDrawOrder: { ...s.prevDrawOrder, ...drawnNow } };
+      return { ...fresh(), prevDrawOrder: { ...s.prevDrawOrder, ...drawnNow }, tour: s.tour };
     }
     case 'step':
       return { ...s, step: a.step };
@@ -305,6 +314,25 @@ export function reducer(s: AuctionState, a: Action): AuctionState {
         lotDrawAt: null,
       };
     }
+    case 'drawFixtures': {
+      if (s.tour.order.length) return s;
+      return { ...s, tour: { ...s.tour, order: a.order, drawAt: a.at, results: a.order.map(() => null), final: null } };
+    }
+    case 'clearFixtures': {
+      if (!s.tour.order.length) return s;
+      return { ...s, tour: { ...freshTournament(), prevOrder: s.tour.order } };
+    }
+    case 'result': {
+      if (a.match < 0 || a.match >= s.tour.order.length) return s;
+      const results = s.tour.results.map((r, i) => (i === a.match ? a.score : r));
+      const tour = { ...s.tour, results };
+      // If the change alters who reaches the final, the final's result no longer applies.
+      const before = finalists(s.tour), after = finalists(tour);
+      const same = !!before && !!after && before[0] === after[0] && before[1] === after[1];
+      return { ...s, tour: same ? tour : { ...tour, final: null } };
+    }
+    case 'finalResult':
+      return { ...s, tour: { ...s.tour, final: a.score } };
     case 'drawLot': {
       // Swap the drawn player into the current slot, then open bidding (or auto-allot).
       if (s.done || s.lotDrawAt != null || !lotCandidates(s).includes(a.pick)) return s;
