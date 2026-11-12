@@ -3,7 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { statusOf } from '@/lib/auction';
+import { LOT_SPIN, statusOf } from '@/lib/auction';
+import { useSpin } from './useSpin';
 import { useAuction } from './AuctionProvider';
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -24,7 +25,8 @@ const SYNC_TITLE = {
 export default function Header() {
   const { S, dispatch, sync } = useAuction();
   const path = usePathname();
-  const status = statusOf(S);
+  const { spinning } = useSpin(S.lotDrawAt, LOT_SPIN);
+  const status = spinning ? { label: 'Drawing player…', bg: '#F4D35E', fg: '#0A110E' } : statusOf(S);
 
   const onReset = () => {
     if (confirm('Reset the whole auction? All bids, purchases and team squads will be cleared.'))

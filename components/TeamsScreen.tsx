@@ -1,8 +1,9 @@
 'use client';
 
 import { CONFIG, META, TEAM_COLORS, fmt } from '@/lib/config';
-import { current, iconOf, purseLeft } from '@/lib/auction';
+import { LOT_SPIN, current, iconOf, purseLeft } from '@/lib/auction';
 import { useAuction } from './AuctionProvider';
+import { useSpin } from './useSpin';
 import Header from './Header';
 import Stage from './Stage';
 
@@ -12,9 +13,13 @@ export default function TeamsScreen() {
   const m = META[cur.pos] || META.MID;
   const n = CONFIG.teams.length;
   const signed = S.squad.reduce((a, b) => a + b, 0);
+  const { spinning } = useSpin(S.lotDrawAt, LOT_SPIN);
+  const revealed = S.lotDrawAt != null && !spinning;
 
   let nowText: React.ReactNode;
   if (S.done) nowText = <>Auction complete · {signed} players signed</>;
+  else if (spinning) nowText = <>Drawing the next player…</>;
+  else if (!revealed) nowText = <>Waiting for the next player draw</>;
   else if (S.sold && S.leader != null && S.bid != null)
     nowText = (
       <>
@@ -37,8 +42,8 @@ export default function TeamsScreen() {
       <div className="card now">
         <div className="now-left">
           <span className="label">Now on the block</span>
-          <span className="now-name cond">{S.done ? '—' : cur.name}</span>
-          {!S.done && (
+          <span className="now-name cond">{S.done ? '—' : revealed ? cur.name : '?'}</span>
+          {!S.done && revealed && (
             <span className="tag cond" style={{ background: m.color }}>
               {cur.pos}
             </span>
@@ -51,7 +56,7 @@ export default function TeamsScreen() {
         {CONFIG.teams.map((t, i) => {
           const list = S.bought[i];
           const open = Math.max(0, CONFIG.squadSize - list.length);
-          const leading = S.leader === i && !S.done && !S.unsold;
+          const leading = revealed && S.leader === i && !S.done && !S.unsold;
           return (
             <div key={t} className={`card tcard${leading ? ' lead' : ''}`}>
               <div className="t-head">

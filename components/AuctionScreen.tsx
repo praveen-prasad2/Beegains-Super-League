@@ -1,22 +1,48 @@
 'use client';
 
 import { CONFIG, META, TEAM_COLORS, fmt, steps } from '@/lib/config';
-import { bidBlock, current, iconOf, locked, nextBid } from '@/lib/auction';
+import { LOT_SPIN, bidBlock, current, iconOf, locked, lotCandidates, nextBid, pickLot } from '@/lib/auction';
 import { useAuction } from './AuctionProvider';
 import EndPanel from './EndPanel';
 import Header from './Header';
 import PlayerArt from './PlayerArt';
 import Stage from './Stage';
+import { useSpin } from './useSpin';
 
 export default function AuctionScreen() {
   const { S, dispatch } = useAuction();
-  const cur = current(S);
-  const m = META[cur.pos] || META.MID;
-  const nxt = S.queue[S.idx + 1];
   const n = CONFIG.teams.length;
+
+  // The player for each lot is drawn at random; bidding opens once the draw has revealed them.
+  const drawn = S.lotDrawAt != null;
+  const { spinning, elapsed } = useSpin(S.lotDrawAt, LOT_SPIN);
+  const revealed = drawn && !spinning;
+  const pot = S.queue.slice(S.idx);
+  const leftInPot = pot.length - (drawn ? 1 : 0);
+
+  const cur = current(S);
+  // Players this draw picks from: one position at a time (GK → CB → RB → LB → MID → ST).
+  const group = drawn
+    ? pot.filter((p) => p.pos === cur.pos && p.again === cur.again)
+    : lotCandidates(S).map((i) => S.queue[i]);
+  const groupPos = group[0]?.pos;
+  const spinLot = group[Math.floor(elapsed / 85) % Math.max(group.length, 1)] ?? cur;
+  const shown = spinning ? spinLot : cur; // player name/position on screen
+  const m = META[shown.pos] || META.MID;
+
+  // While the draw is still spinning, show the lot as it was before the reveal.
+  const bid = revealed ? S.bid : null;
+  const leader = revealed ? S.leader : null;
+  const history = revealed ? S.history : [];
+  const busy = locked(S) || !revealed;
 
   const amount = nextBid(S);
   const placeBid = (team: number) => dispatch({ type: 'bid', team });
+  const drawPlayer = () => {
+    if (drawn) return;
+    const pick = pickLot(S);
+    if (pick != null) dispatch({ type: 'drawLot', pick, at: Date.now() });
+  };
 
   if (S.done)
     return (
@@ -34,24 +60,45 @@ export default function AuctionScreen() {
         <div className="main">
           <div className="card player">
             <div className="art">
-              <div>
-                <PlayerArt key={cur.pos} pos={cur.pos} color={m.color} />
-              </div>
-              <div className="block-tag">Now on the block</div>
+              {revealed ? (
+                <div>
+                  <PlayerArt key={cur.pos} pos={cur.pos} color={m.color} />
+                </div>
+              ) : (
+                <div className={`mystery${spinning ? ' spinning' : ''}`}>
+                  <span className="mystery-q cond">?</span>
+                  <button type="button" className="draw-player cond" onClick={drawPlayer} disabled={drawn}>
+                    {spinning ? 'Drawing…' : 'Draw player'}
+                  </button>
+                  <span className="mystery-hint">
+                    {groupPos && <b>{groupPos} draw</b>} · {group.length} {groupPos ?? 'player'}
+                    {group.length === 1 ? '' : 's'} left
+                    {group.every((p) => p.again) && ' · second round'}
+                  </span>
+                </div>
+              )}
+              <div className="block-tag">{revealed ? 'Now on the block' : 'Player draw'}</div>
             </div>
             <div className="pinfo">
               <div>
                 <div className="label">Name</div>
-                <div className="pname cond">{cur.name}</div>
+                <div className={`pname cond${spinning ? ' spin' : ''}`}>{drawn ? shown.name : '?'}</div>
               </div>
               <div>
                 <div className="label">Position</div>
-                <div className="pos cond" style={{ background: m.color }}>
-                  {cur.pos} · {m.label}
-                </div>
+                {drawn ? (
+                  <div className={`pos cond${spinning ? ' spin' : ''}`} style={{ background: m.color }}>
+                    {shown.pos} · {m.label}
+                  </div>
+                ) : (
+                  <div className="pos cond pos-unknown">Not drawn yet</div>
+                )}
               </div>
               <div className="upnext">
-                Up next <span>{S.done ? 'None' : nxt ? `${nxt.name} · ${nxt.pos}` : 'Last player'}</span>
+                Left in the pot{' '}
+                <span>
+                  {leftInPot} player{leftInPot === 1 ? '' : 's'}
+                </span>
               </div>
             </div>
           </div>
@@ -60,11 +107,11 @@ export default function AuctionScreen() {
             <div className="card history">
               <div className="h-title">
                 <div className="cond">Bid history</div>
-                <div className="count">{S.history.length ? `Last ${S.history.length} bids` : 'Last 5 bids'}</div>
+                <div className="count">{history.length ? `Last ${history.length} bids` : 'Last 5 bids'}</div>
               </div>
-              {S.history.length ? (
+              {history.length ? (
                 <div className="rows">
-                  {S.history.map((h, i) => (
+                  {history.map((h, i) => (
                     <div key={`${S.idx}-${h.value}`} className={`row${i === 0 ? ' top' : ''}`}>
                       <div className="team">
                         <div className="dot" style={{ background: TEAM_COLORS[h.team] }} />
@@ -75,7 +122,7 @@ export default function AuctionScreen() {
                   ))}
                 </div>
               ) : (
-                <div className="empty">Waiting for the opening bid at base price</div>
+                <div className="empty">{revealed ? 'Waiting for the opening bid at base price' : 'Draw a player to open the bidding'}</div>
               )}
             </div>
           </div>
@@ -87,13 +134,13 @@ export default function AuctionScreen() {
             </div>
             <div>
               <div className="cur-label">Current bid</div>
-              <div className="bid cond">{fmt(S.bid == null ? CONFIG.basePrice : S.bid)}</div>
+              <div className="bid cond">{fmt(bid == null ? CONFIG.basePrice : bid)}</div>
               <div className="leader">
-                <div className="dot" style={{ background: S.leader == null ? '#3A4D43' : TEAM_COLORS[S.leader] }} />
+                <div className="dot" style={{ background: leader == null ? '#3A4D43' : TEAM_COLORS[leader] }} />
                 <div>
-                  {S.leader == null ? 'No bids yet' : CONFIG.teams[S.leader]}
-                  {S.leader != null && CONFIG.managers[S.leader] && (
-                    <span className="mgr"> · {CONFIG.managers[S.leader]}</span>
+                  {leader == null ? (revealed ? 'No bids yet' : 'Waiting for the draw') : CONFIG.teams[leader]}
+                  {leader != null && CONFIG.managers[leader] && (
+                    <span className="mgr"> · {CONFIG.managers[leader]}</span>
                   )}
                 </div>
               </div>
@@ -111,7 +158,7 @@ export default function AuctionScreen() {
                     key={i}
                     type="button"
                     className={`step${S.step === i ? ' on' : ''}`}
-                    disabled={locked(S)}
+                    disabled={busy}
                     onClick={() => dispatch({ type: 'step', step: i })}
                   >
                     + {fmt(v)}
@@ -123,12 +170,12 @@ export default function AuctionScreen() {
               <div className="small-label">Tap a team to place its bid</div>
               <div className="grid" style={{ gridTemplateColumns: `repeat(${Math.min(n, 4)},minmax(0,1fr))` }}>
                 {CONFIG.teams.map((t, i) => {
-                  const block = bidBlock(S, i, amount);
+                  const block = revealed ? bidBlock(S, i, amount) : '';
                   return (
                     <button
                       key={t}
                       type="button"
-                      className={`teambtn${S.leader === i ? ' lead' : ''}`}
+                      className={`teambtn${leader === i ? ' lead' : ''}`}
                       disabled={block !== null}
                       title={block || undefined}
                       onClick={() => placeBid(i)}
@@ -147,7 +194,7 @@ export default function AuctionScreen() {
               <button
                 type="button"
                 className="sold-btn cond"
-                disabled={locked(S) || S.bid == null}
+                disabled={busy || S.bid == null}
                 onClick={() => dispatch({ type: 'sold' })}
               >
                 Sold
@@ -155,7 +202,7 @@ export default function AuctionScreen() {
               <button
                 type="button"
                 className="ghost"
-                disabled={locked(S) || S.bid != null}
+                disabled={busy || S.bid != null}
                 onClick={() => dispatch({ type: 'unsold' })}
               >
                 Unsold
@@ -163,14 +210,14 @@ export default function AuctionScreen() {
               <button
                 type="button"
                 className="ghost"
-                disabled={S.done || !(S.sold || S.unsold)}
+                disabled={S.done || !revealed || !(S.sold || S.unsold)}
                 onClick={() => dispatch({ type: 'next' })}
               >
                 Next lot
               </button>
             </div>
 
-            {S.sold && S.leader != null && S.bid != null && (
+            {revealed && S.sold && S.leader != null && S.bid != null && (
               <div className="stamp-wrap" style={{ top: 150 }}>
                 <div className="stamp" style={{ borderColor: '#FF7A1A', color: '#FF7A1A' }}>
                   <div className="big cond" style={S.auto ? { fontSize: 76 } : undefined}>
@@ -183,7 +230,7 @@ export default function AuctionScreen() {
                 </div>
               </div>
             )}
-            {S.unsold && (
+            {revealed && S.unsold && (
               <div className="stamp-wrap" style={{ top: 170 }}>
                 <div className="stamp" style={{ borderColor: '#9AAAA1', color: '#9AAAA1' }}>
                   <div className="big cond" style={{ fontSize: 88 }}>
@@ -199,7 +246,7 @@ export default function AuctionScreen() {
           {CONFIG.teams.map((t, i) => (
             <div
               key={t}
-              className={`purse${S.leader === i ? ' lead' : ''}`}
+              className={`purse${leader === i ? ' lead' : ''}`}
               title={S.bought[i].map((p) => p.name).join(', ')}
             >
               <div className="n">

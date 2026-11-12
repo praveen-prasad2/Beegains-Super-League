@@ -31,6 +31,9 @@ export const META: Record<string, { label: string; color: string }> = {
   LB: { label: 'Left Back', color: '#E05BC1' },
 };
 
+/** Order positions are drawn in: every GK first, then CB, and so on. Within a position the draw is random. */
+export const POSITION_ORDER = ['GK', 'CB', 'RB', 'LB', 'MID', 'ST'];
+
 /** Old position codes from earlier saves → current codes. */
 export const POSITION_RENAMES: Record<string, string> = { DEF: 'CB', FWD: 'ST' };
 

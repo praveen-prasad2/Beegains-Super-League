@@ -1,4 +1,4 @@
-import { CONFIG, POSITION_RENAMES, STORAGE_KEY, steps } from './config';
+import { CONFIG, POSITION_ORDER, POSITION_RENAMES, STORAGE_KEY, steps } from './config';
 
 export type Lot = { name: string; pos: string; again: boolean };
 export type BidEntry = { team: number; value: number };
@@ -15,6 +15,9 @@ export type AuctionState = {
   unsold: boolean;
   /** Current lot was given automatically to the only team still missing that position. */
   auto: boolean;
+  /** When the current lot's player was drawn (ms); null = not drawn yet, bidding can't start. */
+  lotDrawAt: number | null;
+  /** queue[idx..] is the pot still to be auctioned; drawing swaps the picked player into queue[idx]. */
   queue: Lot[];
   spent: number[];
   squad: number[];
@@ -29,6 +32,32 @@ export type AuctionState = {
 
 /** How long one team's draw spins before revealing (ms). */
 export const DRAW_SPIN = 2600;
+/** How long the player draw spins before revealing (ms). */
+export const LOT_SPIN = 2400;
+
+const posRank = (pos: string) => {
+  const r = POSITION_ORDER.indexOf(pos);
+  return r < 0 ? POSITION_ORDER.length : r;
+};
+
+/**
+ * Queue indexes the next player can be drawn from: first-round players before any
+ * second-round ones, and within that, only the earliest position in POSITION_ORDER
+ * that still has players left (all GKs, then CBs, ...).
+ */
+export function lotCandidates(s: AuctionState): number[] {
+  const pot = s.queue.map((_, i) => i).filter((i) => i >= s.idx);
+  const firstRound = pot.filter((i) => !s.queue[i].again);
+  const group = firstRound.length ? firstRound : pot;
+  if (!group.length) return [];
+  const rank = Math.min(...group.map((i) => posRank(s.queue[i].pos)));
+  return group.filter((i) => posRank(s.queue[i].pos) === rank);
+}
+
+export function pickLot(s: AuctionState): number | null {
+  const c = lotCandidates(s);
+  return c.length ? c[Math.floor(Math.random() * c.length)] : null;
+}
 
 export const iconOf = (s: AuctionState, team: number) => {
   const k = s.icons[team];
@@ -68,11 +97,13 @@ export type Action =
   | { type: 'reset' }
   | { type: 'drawTeam'; team: number; icon: number; at: number }
   | { type: 'redraw' }
+  | { type: 'drawLot'; pick: number; at: number }
   | { type: 'load'; state: AuctionState };
 
 export function fresh(): AuctionState {
   return {
     idx: 0, done: false, bid: null, leader: null, step: 0, history: [], sold: false, unsold: false, auto: false,
+    lotDrawAt: null,
     queue: CONFIG.players.map(([name, pos]) => ({ name, pos, again: false })),
     spent: CONFIG.teams.map(() => 0),
     squad: CONFIG.teams.map(() => 0),
@@ -112,6 +143,9 @@ export function normalize(s: any): AuctionState | null {
     delete s.drawAt;
     if (typeof s.auto !== 'boolean') s.auto = false;
     // Renamed positions (DEF → CB, FWD → ST).
+    // Saves from before the player draw: a lot already in progress counts as drawn.
+    if (typeof s.lotDrawAt !== 'number' && s.lotDrawAt !== null)
+      s.lotDrawAt = s.idx > 0 || s.bid != null || s.sold || s.unsold || s.done ? 0 : null;
     const rename = (p: { pos?: string }) =>
       p && typeof p.pos === 'string' && POSITION_RENAMES[p.pos] ? { ...p, pos: POSITION_RENAMES[p.pos] } : p;
     s.queue = s.queue.map(rename);
@@ -130,7 +164,7 @@ export function saveState(s: AuctionState) {
 }
 
 export const current = (s: AuctionState) => s.queue[s.idx] || s.queue[s.queue.length - 1];
-export const locked = (s: AuctionState) => s.sold || s.unsold || s.done;
+export const locked = (s: AuctionState) => s.sold || s.unsold || s.done || s.lotDrawAt == null;
 /** Bid placed by the fixed raise buttons. */
 export const nextBid = (s: AuctionState) => (s.bid == null ? CONFIG.basePrice : s.bid + steps()[s.step]);
 /** Lowest amount a custom bid may be. */
@@ -159,8 +193,9 @@ export function statusOf(s: AuctionState) {
   let status = { label: 'Bidding open', bg: '#C8F03C', fg: '#0A110E' };
   if (s.sold) status = { label: s.auto ? 'Auto allotted' : 'Sold', bg: '#FF7A1A', fg: '#0A110E' };
   else if (s.unsold) status = { label: 'Unsold', bg: '#3A4D43', fg: '#EEF3EF' };
+  if (!s.done && s.lotDrawAt == null) status = { label: 'Draw next player', bg: '#F4D35E', fg: '#0A110E' };
   if (s.done) status = { label: 'Auction complete', bg: '#EEF3EF', fg: '#0A110E' };
-  else if (cur.again && !s.sold && !s.unsold) status = { label: 'Second round', bg: '#F4D35E', fg: '#0A110E' };
+  else if (cur.again && s.lotDrawAt != null && !s.sold && !s.unsold) status = { label: 'Second round', bg: '#F4D35E', fg: '#0A110E' };
   return status;
 }
 
@@ -236,9 +271,17 @@ export function reducer(s: AuctionState, a: Action): AuctionState {
       const queue = s.unsold && !cur.again ? [...s.queue, { name: cur.name, pos: cur.pos, again: true }] : s.queue;
       const allFull = s.squad.every((q) => q >= CONFIG.squadSize);
       if (s.idx + 1 >= queue.length || allFull) return { ...s, queue, done: true };
-      return autoAllot({
+      return {
         ...s, queue, idx: s.idx + 1, bid: null, leader: null, history: [], sold: false, unsold: false, auto: false,
-      });
+        lotDrawAt: null,
+      };
+    }
+    case 'drawLot': {
+      // Swap the drawn player into the current slot, then open bidding (or auto-allot).
+      if (s.done || s.lotDrawAt != null || !lotCandidates(s).includes(a.pick)) return s;
+      const queue = [...s.queue];
+      [queue[s.idx], queue[a.pick]] = [queue[a.pick], queue[s.idx]];
+      return autoAllot({ ...s, queue, lotDrawAt: a.at });
     }
   }
 }
