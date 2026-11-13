@@ -1,13 +1,30 @@
 'use client';
 
 import { CONFIG, META, TEAM_COLORS, fmt } from '@/lib/config';
-import { LOT_SPIN, current, iconOf, purseLeft } from '@/lib/auction';
+import { LOT_SPIN, type Signing, current, iconOf, purseLeft } from '@/lib/auction';
 import { useAuction } from './AuctionProvider';
 import { useSpin } from './useSpin';
 import Header from './Header';
 import Stage from './Stage';
 
-export default function TeamsScreen() {
+/** Public squad layout: one slot per position, in pitch order (keeper → defence → midfield → attack). */
+const LINEUP = ['GK', 'RB', 'CB', 'LB', 'MID', 'ST'];
+
+/** Fill each LINEUP slot with the team's signing for that position; anything left over goes after. */
+function lineup(list: Signing[]) {
+  const rest = [...list];
+  const slots = LINEUP.map((pos) => {
+    const k = rest.findIndex((p) => p.pos === pos);
+    return { pos, player: k < 0 ? null : rest.splice(k, 1)[0] };
+  });
+  return [...slots, ...rest.map((p) => ({ pos: p.pos, player: p as Signing | null }))];
+}
+
+/**
+ * `full` (admin panel only) shows purses, spend and prices in the original list layout.
+ * The public view hides every amount and lays each squad out by position.
+ */
+export default function TeamsScreen({ full = false }: { full?: boolean }) {
   const { S, teams } = useAuction();
   const cur = current(S);
   const m = META[cur.pos] || META.MID;
@@ -23,17 +40,27 @@ export default function TeamsScreen() {
   else if (S.sold && S.leader != null && S.bid != null)
     nowText = (
       <>
-        {S.auto ? 'Allotted' : 'Sold'} to <b style={{ color: TEAM_COLORS[S.leader] }}>{teams[S.leader]}</b> for <b>{fmt(S.bid)}</b>
+        {S.auto ? 'Allotted' : 'Sold'} to <b style={{ color: TEAM_COLORS[S.leader] }}>{teams[S.leader]}</b>
+        {full && (
+          <>
+            {' '}
+            for <b>{fmt(S.bid)}</b>
+          </>
+        )}
       </>
     );
   else if (S.unsold) nowText = <>Unsold</>;
   else if (S.leader != null && S.bid != null)
-    nowText = (
+    nowText = full ? (
       <>
         Current bid <b>{fmt(S.bid)}</b> · <b style={{ color: TEAM_COLORS[S.leader] }}>{teams[S.leader]}</b>
       </>
+    ) : (
+      <>
+        Bidding · <b style={{ color: TEAM_COLORS[S.leader] }}>{teams[S.leader]}</b> leading
+      </>
     );
-  else nowText = <>Waiting for the opening bid at {fmt(CONFIG.basePrice)}</>;
+  else nowText = full ? <>Waiting for the opening bid at {fmt(CONFIG.basePrice)}</> : <>Waiting for the opening bid</>;
 
   return (
     <Stage>
@@ -72,22 +99,33 @@ export default function TeamsScreen() {
                 </div>
               )}
 
-              <div className="t-stats">
-                <div>
-                  <div className="label">Purse left</div>
-                  <div className="t-big cond">{fmt(purseLeft(S, i))}</div>
-                </div>
-                <div>
-                  <div className="label">Spent</div>
-                  <div className="t-mid cond">{fmt(S.spent[i])}</div>
-                </div>
-                <div>
-                  <div className="label">Squad</div>
-                  <div className="t-mid cond">
-                    {S.squad[i]} / {CONFIG.squadSize}
+              {full ? (
+                <div className="t-stats">
+                  <div>
+                    <div className="label">Purse left</div>
+                    <div className="t-big cond">{fmt(purseLeft(S, i))}</div>
+                  </div>
+                  <div>
+                    <div className="label">Spent</div>
+                    <div className="t-mid cond">{fmt(S.spent[i])}</div>
+                  </div>
+                  <div>
+                    <div className="label">Squad</div>
+                    <div className="t-mid cond">
+                      {S.squad[i]} / {CONFIG.squadSize}
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="t-stats pub">
+                  <div>
+                    <div className="label">Squad</div>
+                    <div className="t-mid cond">
+                      {S.squad[i]} / {CONFIG.squadSize}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="t-list">
                 {iconOf(S, i) ? (
@@ -102,27 +140,44 @@ export default function TeamsScreen() {
                     <span className="t-player">Icon player · to be drawn</span>
                   </div>
                 )}
-                {list.map((p, k) => {
-                  const pm = META[p.pos];
-                  return (
-                    <div key={`${p.name}-${k}`} className="t-row">
-                      <span className="t-num">{String(k + 1).padStart(2, '0')}</span>
-                      <span className="t-player">{p.name}</span>
-                      {p.pos && (
-                        <span className="tag sm cond" style={{ background: pm ? pm.color : '#3A4D43' }}>
-                          {p.pos}
+                {full ? (
+                  <>
+                    {list.map((p, k) => {
+                      const pm = META[p.pos];
+                      return (
+                        <div key={`${p.name}-${k}`} className="t-row">
+                          <span className="t-num">{String(k + 1).padStart(2, '0')}</span>
+                          <span className="t-player">{p.name}</span>
+                          {p.pos && (
+                            <span className="tag sm cond" style={{ background: pm ? pm.color : '#3A4D43' }}>
+                              {p.pos}
+                            </span>
+                          )}
+                          <span className="t-price cond">{p.price == null ? '—' : fmt(p.price)}</span>
+                        </div>
+                      );
+                    })}
+                    {Array.from({ length: open }, (_, k) => (
+                      <div key={`open-${k}`} className="t-row open">
+                        <span className="t-num">{String(list.length + k + 1).padStart(2, '0')}</span>
+                        <span className="t-player">Open slot</span>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  lineup(list).map(({ pos, player }, k) => {
+                    const pm = META[pos];
+                    return (
+                      <div key={`${pos}-${k}`} className={`t-row${player ? '' : ' open'}`}>
+                        <span className="tag sm cond t-pos" style={{ background: pm ? pm.color : '#3A4D43' }}>
+                          {pos}
                         </span>
-                      )}
-                      <span className="t-price cond">{p.price == null ? '—' : fmt(p.price)}</span>
-                    </div>
-                  );
-                })}
-                {Array.from({ length: open }, (_, k) => (
-                  <div key={`open-${k}`} className="t-row open">
-                    <span className="t-num">{String(list.length + k + 1).padStart(2, '0')}</span>
-                    <span className="t-player">Open slot</span>
-                  </div>
-                ))}
+                        <span className="t-player">{player ? player.name : 'To be signed'}</span>
+                        <span className="t-poslabel">{pm?.label}</span>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           );

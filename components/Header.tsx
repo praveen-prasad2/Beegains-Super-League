@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -8,7 +9,8 @@ import { useSpin } from './useSpin';
 import { useAuction } from './AuctionProvider';
 
 const pad = (n: number) => String(n).padStart(2, '0');
-const TABS = [
+/** Main screens: the header tab bar, and the admin sidebar (which hides the tab bar). */
+export const TABS = [
   { href: '/', label: 'Home' },
   { href: '/teams', label: 'Teams' },
   { href: '/fixtures', label: 'Fixtures' },
@@ -30,9 +32,13 @@ const SYNC_TITLE = {
   offline: 'Database unreachable. Changes are kept on this device and will be saved when it reconnects.',
 };
 
-export default function Header() {
+/** `nav={false}` hides the tab bar (the admin panel shows the tabs in its sidebar instead). */
+export default function Header({ nav = true }: { nav?: boolean }) {
   const { S, sync } = useAuction();
   const path = usePathname();
+  // Inside the admin panel's embedded view the panel's sidebar does the navigating.
+  const [embedded, setEmbedded] = useState(false);
+  useEffect(() => setEmbedded(window.self !== window.top), []);
   const { spinning } = useSpin(S.lotDrawAt, LOT_SPIN);
   const status = spinning ? { label: 'Drawing player…', bg: '#F4D35E', fg: '#0A110E' } : statusOf(S);
 
@@ -47,13 +53,15 @@ export default function Header() {
         </div>
       </div>
       <div className="chips">
-        <nav className="tabs" aria-label="Screens">
-          {TABS.map((t) => (
-            <Link key={t.href} href={t.href} className={`tab${path === t.href ? ' on' : ''}`}>
-              {t.label}
-            </Link>
-          ))}
-        </nav>
+        {nav && !embedded && (
+          <nav className="tabs" aria-label="Screens">
+            {TABS.map((t) => (
+              <Link key={t.href} href={t.href} className={`tab${path === t.href ? ' on' : ''}`}>
+                {t.label}
+              </Link>
+            ))}
+          </nav>
+        )}
         {AUCTION_PAGES.includes(path) && (
           <>
             <div className="chip">

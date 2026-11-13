@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { CONFIG, REACTION_BASE, STORAGE_KEY } from '@/lib/config';
+import { isAdmin } from '@/lib/adminAuth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -45,6 +46,17 @@ export async function POST(req: Request) {
       { upsert: true, returnDocument: 'after' }
     );
     return NextResponse.json({ counts: totals(doc) }, { headers: NO_STORE });
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Admin only: clear every team's taps (counts go back to REACTION_BASE). */
+export async function DELETE() {
+  if (!(await isAdmin())) return NextResponse.json({ error: 'Admin login required' }, { status: 401 });
+  try {
+    await (await collection()).updateOne({ _id: ID }, { $set: { counts: {} } }, { upsert: true });
+    return NextResponse.json({ counts: totals(null) }, { headers: NO_STORE });
   } catch (e) {
     return fail(e);
   }

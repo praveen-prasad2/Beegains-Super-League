@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { CONFIG, TEAM_COLORS } from '@/lib/config';
 import { iconOf } from '@/lib/auction';
 import {
@@ -16,7 +15,8 @@ import {
 } from '@/lib/fixtures';
 import { useAuction } from './AuctionProvider';
 import Header from './Header';
-import AdminSidebar from './AdminSidebar';
+import AdminSidebar, { type AdminView, SCREENS } from './AdminSidebar';
+import ScreenFrame from './ScreenFrame';
 import { useSpin } from './useSpin';
 import Stage from './Stage';
 
@@ -259,10 +259,6 @@ function Setup() {
     dispatch({ type: 'renameTeams', names });
     setMsg('Saved');
   };
-  const logout = async () => {
-    await fetch('/api/admin/logout', { method: 'POST' }).catch(() => {});
-    location.reload();
-  };
   const draw = () => dispatch({ type: 'drawFixtures', order: drawFixtures(T.prevOrder), at: Date.now() });
   const reset = () => {
     const warn = played
@@ -310,9 +306,6 @@ function Setup() {
             Draw fixtures
           </button>
         )}
-        <button type="button" className="ghost ad-logout" onClick={logout}>
-          Log out
-        </button>
       </div>
     </div>
   );
@@ -328,107 +321,110 @@ export default function AdminScreen() {
   const scorers = topScorers(T).slice(0, 5);
   const assists = topAssists(T).slice(0, 5);
 
-  if (!T.order.length)
-    return (
-      <Stage>
-        <Header />
-        <div className="ad-shell">
-          <AdminSidebar />
-          <div className="ad-body">
-            <Setup key={teams.join('|')} />
-            <div className="card fx-empty">
-              <span className="d-q cond">?</span>
-              <span className="draw-sub">Draw the fixtures above. They are revealed live on the Fixtures screen.</span>
+  const [view, setView] = useState<AdminView>('results');
+  const screen = SCREENS.find((x) => x.id === view);
+
+  let body: React.ReactNode;
+  if (screen) body = <ScreenFrame key={screen.id} href={screen.href} label={screen.label} />;
+  else if (!T.order.length)
+    body = (
+      <>
+        <Setup key={teams.join('|')} />
+        <div className="card fx-empty">
+          <span className="d-q cond">?</span>
+          <span className="draw-sub">Draw the fixtures above. They are revealed live on the Fixtures screen.</span>
+        </div>
+      </>
+    );
+  else
+    body = (
+      <>
+        <Setup key={teams.join('|')} />
+        <div className="ad-main">
+          <div className="card ad-list">
+            <div className="h-title">
+              <span className="cond">Matches</span>
+              <span className="count">Admin</span>
             </div>
+            {matches.map((m) => {
+              const on = cur?.key === m.key;
+              return (
+                <button
+                  key={String(m.key)}
+                  type="button"
+                  className={`ad-match${on ? ' on' : ''}${m.score ? ' done' : ''}`}
+                  disabled={!m.teams}
+                  onClick={() => setSel(m.key)}
+                >
+                  <span className="fx-no cond">{m.label}</span>
+                  {m.teams ? (
+                    <span className="ad-mteams">
+                      <Dot t={m.teams[0]} />
+                      {teams[m.teams[0]]}
+                      <span className="ad-mscore">{m.score ? `${m.score.h} : ${m.score.a}` : 'vs'}</span>
+                      {teams[m.teams[1]]}
+                      <Dot t={m.teams[1]} />
+                    </span>
+                  ) : (
+                    <span className="ad-mteams muted">1st vs 2nd · after the league</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {cur?.teams ? (
+            <MatchEditor
+              key={`${String(cur.key)}-${JSON.stringify(cur.score)}`}
+              mkey={cur.key}
+              label={cur.key === 'final' ? 'Final' : `${cur.label} · League`}
+              pair={cur.teams}
+              saved={cur.score}
+              savedPens={cur.key === 'final' ? (T.final?.pens ?? null) : null}
+            />
+          ) : (
+            <div className="card fx-empty">
+              <span className="draw-sub">Pick a match</span>
+            </div>
+          )}
+
+          <div className="ad-stats">
+            {[
+              { title: 'Top scorers', list: scorers, val: (p: (typeof scorers)[number]) => p.goals },
+              { title: 'Top assists', list: assists, val: (p: (typeof scorers)[number]) => p.assists },
+            ].map((b) => (
+              <div key={b.title} className="card ad-board">
+                <div className="h-title">
+                  <span className="cond">{b.title}</span>
+                  <button type="button" className="fx-link" onClick={() => setView('stats')}>
+                    Full list
+                  </button>
+                </div>
+                {b.list.length === 0 ? (
+                  <div className="ad-none">None yet</div>
+                ) : (
+                  b.list.map((p, k) => (
+                    <div key={`${p.team}-${p.name}`} className="ad-brow">
+                      <span className="fx-no cond">{k + 1}</span>
+                      <Dot t={p.team} />
+                      <span className="ad-bname">{p.name}</span>
+                      <span className="ad-bval cond">{b.val(p)}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            ))}
           </div>
         </div>
-      </Stage>
+      </>
     );
 
   return (
     <Stage>
-      <Header />
+      <Header nav={false} />
       <div className="ad-shell">
-        <AdminSidebar />
-        <div className="ad-body">
-          <Setup key={teams.join('|')} />
-          <div className="ad-main">
-            <div className="card ad-list">
-              <div className="h-title">
-                <span className="cond">Matches</span>
-                <span className="count">Admin</span>
-              </div>
-              {matches.map((m) => {
-                const on = cur?.key === m.key;
-                return (
-                  <button
-                    key={String(m.key)}
-                    type="button"
-                    className={`ad-match${on ? ' on' : ''}${m.score ? ' done' : ''}`}
-                    disabled={!m.teams}
-                    onClick={() => setSel(m.key)}
-                  >
-                    <span className="fx-no cond">{m.label}</span>
-                    {m.teams ? (
-                      <span className="ad-mteams">
-                        <Dot t={m.teams[0]} />
-                        {teams[m.teams[0]]}
-                        <span className="ad-mscore">{m.score ? `${m.score.h} : ${m.score.a}` : 'vs'}</span>
-                        {teams[m.teams[1]]}
-                        <Dot t={m.teams[1]} />
-                      </span>
-                    ) : (
-                      <span className="ad-mteams muted">1st vs 2nd · after the league</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {cur?.teams ? (
-              <MatchEditor
-                key={`${String(cur.key)}-${JSON.stringify(cur.score)}`}
-                mkey={cur.key}
-                label={cur.key === 'final' ? 'Final' : `${cur.label} · League`}
-                pair={cur.teams}
-                saved={cur.score}
-                savedPens={cur.key === 'final' ? (T.final?.pens ?? null) : null}
-              />
-            ) : (
-              <div className="card fx-empty">
-                <span className="draw-sub">Pick a match</span>
-              </div>
-            )}
-
-            <div className="ad-stats">
-              {[
-                { title: 'Top scorers', list: scorers, val: (p: (typeof scorers)[number]) => p.goals },
-                { title: 'Top assists', list: assists, val: (p: (typeof scorers)[number]) => p.assists },
-              ].map((b) => (
-                <div key={b.title} className="card ad-board">
-                  <div className="h-title">
-                    <span className="cond">{b.title}</span>
-                    <Link href="/stats" className="fx-link">
-                      Full list
-                    </Link>
-                  </div>
-                  {b.list.length === 0 ? (
-                    <div className="ad-none">None yet</div>
-                  ) : (
-                    b.list.map((p, k) => (
-                      <div key={`${p.team}-${p.name}`} className="ad-brow">
-                        <span className="fx-no cond">{k + 1}</span>
-                        <Dot t={p.team} />
-                        <span className="ad-bname">{p.name}</span>
-                        <span className="ad-bval cond">{b.val(p)}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <AdminSidebar view={view} onView={setView} />
+        <div className="ad-body">{body}</div>
       </div>
     </Stage>
   );
