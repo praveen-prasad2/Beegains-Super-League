@@ -9,8 +9,7 @@ import { useAuction } from './AuctionProvider';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const TABS = [
-  { href: '/draw', label: 'Icon draw' },
-  { href: '/', label: 'Live bid' },
+  { href: '/', label: 'Home' },
   { href: '/teams', label: 'Teams' },
   { href: '/fixtures', label: 'Fixtures' },
   { href: '/points', label: 'Points' },
@@ -19,9 +18,9 @@ const TABS = [
 ];
 
 /** Auction screens (header title reads "Player Auction"); the rest are league screens. */
-const AUCTION = ['/', '/teams', '/draw'];
+const AUCTION = ['/live', '/teams', '/draw'];
 /** Pages that show the auction's player counter and status chip. */
-const AUCTION_PAGES = ['/'];
+const AUCTION_PAGES = ['/live'];
 
 const SYNC_LABEL = { connecting: 'Connecting', saving: 'Saving', saved: 'Saved', offline: 'Offline' };
 const SYNC_TITLE = {
