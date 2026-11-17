@@ -319,7 +319,7 @@ function Setup() {
               type="button"
               className="redraw-btn"
               onClick={drawFixed}
-              title="A v B, A v C, B v C, then the return legs in the same order"
+              title="A v B, B v C, C v A, then the return legs in the same order"
             >
               Fixed order · {fixedLabel}
             </button>

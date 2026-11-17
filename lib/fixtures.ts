@@ -61,12 +61,20 @@ export function drawFixtures(prev: Pair[] | null): Pair[] {
 
 /**
  * Double round-robin in plain team order instead of a random draw:
- * A v B, A v C, B v C, then the return legs B v A, C v A, C v B.
+ * going round the teams: A v B, B v C, C v A, then the return legs B v A, C v B, A v C.
  */
 export function fixedFixtures(): Pair[] {
   const n = CONFIG.teams.length;
   const round1: Pair[] = [];
-  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) round1.push([i, j]);
+  const seen = new Set<string>();
+  for (let k = 1; k < n; k++)
+    for (let i = 0; i < n; i++) {
+      const j = (i + k) % n;
+      const key = [i, j].sort().join('-');
+      if (seen.has(key)) continue;
+      seen.add(key);
+      round1.push([i, j]);
+    }
   return [...round1, ...round1.map(([x, y]) => [y, x] as Pair)];
 }
 
