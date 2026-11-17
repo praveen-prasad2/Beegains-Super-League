@@ -1,6 +1,7 @@
 'use client';
 
-import { CONFIG, META, TEAM_COLORS, fmt } from '@/lib/config';
+import Image from 'next/image';
+import { CONFIG, META, TEAM_COLORS, TEAM_LOGOS, fmt } from '@/lib/config';
 import { LOT_SPIN, type Signing, current, iconOf, purseLeft } from '@/lib/auction';
 import { useAuction } from './AuctionProvider';
 import { useSpin } from './useSpin';
@@ -88,7 +89,17 @@ export default function TeamsScreen({ full = false }: { full?: boolean }) {
             <div key={t} className={`card tcard${leading ? ' lead' : ''}`}>
               <div className="t-head">
                 <div className="t-name cond">
-                  <span className="dot" style={{ background: TEAM_COLORS[i] }} />
+                  {TEAM_LOGOS[i] ? (
+                    <Image
+                      className="t-logo"
+                      src={TEAM_LOGOS[i]!.src}
+                      alt=""
+                      width={TEAM_LOGOS[i]!.w}
+                      height={TEAM_LOGOS[i]!.h}
+                    />
+                  ) : (
+                    <span className="dot" style={{ background: TEAM_COLORS[i] }} />
+                  )}
                   {t}
                 </div>
                 {leading && <span className="t-badge">{S.sold ? 'Just signed' : 'Leading bid'}</span>}

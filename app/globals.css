@@ -111,6 +111,7 @@ button:disabled{cursor:not-allowed;opacity:.4}
 .t-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .t-name{display:flex;align-items:center;gap:14px;font-weight:800;font-size:40px;line-height:1;text-transform:uppercase;min-width:0}
 .t-name .dot{width:18px;height:18px;border-radius:5px}
+.t-logo{width:auto;height:56px;flex:0 0 auto;object-fit:contain}
 .t-badge{padding:6px 12px;border-radius:999px;background:var(--accent);color:var(--bg);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
 .t-stats{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--line)}
 .t-stats .label{font-size:12px}
@@ -448,6 +449,7 @@ button:disabled{cursor:not-allowed;opacity:.4}
 .sb-count.big .sb-live{font-size:110px}
 .hm-teams{display:grid;gap:28px;flex:1 1 auto;min-height:0}
 .hm-team{padding:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;border-top:6px solid}
+.hm-logo{width:auto;height:auto;max-width:100%;max-height:220px;object-fit:contain}
 .hm-name{font-weight:800;font-size:64px;line-height:1;text-transform:uppercase;text-align:center;letter-spacing:.02em}
 .hm-fire{position:relative;display:flex;align-items:center;gap:14px;height:84px;padding:0 32px;margin-top:8px;border-radius:999px;border:2px solid var(--line2);background:var(--panel2);color:var(--text);transition:transform .1s,border-color .15s}
 .hm-fire:hover{border-color:var(--sold)}

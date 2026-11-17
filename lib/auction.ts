@@ -195,6 +195,8 @@ export function normalize(s: any): AuctionState | null {
     s.tour = normalizeTournament(s.tour);
     if (!Array.isArray(s.teamNames) || s.teamNames.length !== n || !s.teamNames.every((x: unknown) => typeof x === 'string'))
       s.teamNames = [...CONFIG.teams];
+    // Saves made before the teams were named still hold the old placeholders; swap those for the real names.
+    s.teamNames = s.teamNames.map((x: string, i: number) => (/^Team [A-Z]$/.test(x.trim()) ? CONFIG.teams[i] : x));
     return s as AuctionState;
   } catch {
     return null;

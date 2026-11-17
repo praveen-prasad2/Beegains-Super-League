@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { REACTION_BASE, TEAM_COLORS } from '@/lib/config';
+import Image from 'next/image';
+import { REACTION_BASE, TEAM_COLORS, TEAM_LOGOS } from '@/lib/config';
 import { useAuction } from './AuctionProvider';
 import Countdown from './Countdown';
 import Header from './Header';
@@ -82,9 +83,20 @@ export default function HomeScreen() {
           {teams.map((t, i) => (
             <div key={i} className="card hm-team" style={{ borderTopColor: TEAM_COLORS[i] }}>
               <span className="label">Team {i + 1}</span>
-              <span className="hm-name cond" style={{ color: TEAM_COLORS[i] }}>
-                {t}
-              </span>
+              {TEAM_LOGOS[i] ? (
+                <Image
+                  className="hm-logo"
+                  src={TEAM_LOGOS[i]!.src}
+                  alt={t}
+                  width={TEAM_LOGOS[i]!.w}
+                  height={TEAM_LOGOS[i]!.h}
+                  priority
+                />
+              ) : (
+                <span className="hm-name cond" style={{ color: TEAM_COLORS[i] }}>
+                  {t}
+                </span>
+              )}
               <button
                 type="button"
                 className="hm-fire"

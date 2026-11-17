@@ -5,7 +5,7 @@ export const CONFIG = {
   increment: 500, // raise buttons = 1x, 2x, 3x this
   totalPurse: 100000, // per team
   squadSize: 6, // players each team buys in the auction
-  teams: ['Team A', 'Team B', 'Team C'],
+  teams: ['Padakkalam United', 'Veltaro FC', 'Ponnikkara FC'],
   managers: ['Mustafa', 'Siraj', 'Ance'], // same order as teams
   iconPlayers: ['Shaheen', 'Ajmal', 'Ameen'], // drawn to teams; free, not counted in squadSize
 
@@ -19,6 +19,13 @@ export const CONFIG = {
   ] as [string, string][],
 };
 /* ========================================================== */
+
+/** Team logos in /public with their pixel size (same order as teams); null = no logo yet, the team's colour dot is shown instead. */
+export const TEAM_LOGOS: ({ src: string; w: number; h: number } | null)[] = [
+  { src: '/padakkalam.png', w: 1448, h: 1086 },
+  { src: '/veltaro.png', w: 2454, h: 3788 },
+  { src: '/ponnikkara-logo.png', w: 1196, h: 507 }, // ponnikkara.png with its empty margins trimmed
+];
 
 export const TEAM_COLORS = ['#4C9AFF', '#FF9F43', '#2EC4B6', '#E05BC1', '#F4D35E', '#8C7AE6', '#FF6B6B', '#7BD389'];
 
