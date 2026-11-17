@@ -470,3 +470,248 @@ button:disabled{cursor:not-allowed;opacity:.4}
 .t-pos{width:62px;text-align:center;flex:0 0 auto}
 .t-row.open .t-pos{opacity:.45}
 .t-poslabel{font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);white-space:nowrap}
+
+/* =====================================================================
+   Responsive: phones, tablets and narrow windows (< 1100px wide).
+   Stage.tsx adds `fluid` to <html> there; the scaled 1920x1080 stage is
+   replaced by a stacked layout that scrolls. Wide screens are unchanged.
+   `!important` on grid columns overrides the inline per-team columns.
+   ===================================================================== */
+html.fluid,html.fluid body{height:auto;overflow-x:hidden;overflow-y:auto}
+html.fluid #stage{position:relative;left:auto;top:auto;width:100%;height:auto;min-height:100vh;min-height:100dvh;
+  padding:16px;gap:16px;overflow:visible;transform:none}
+.fluid .card{border-radius:18px}
+.fluid .label{font-size:12px}
+.fluid .h-title{gap:10px;flex-wrap:wrap}
+.fluid .h-title .cond{font-size:22px}
+.fluid .empty{padding:20px;font-size:15px;text-align:center}
+.fluid .reset{position:static;align-self:center}
+
+/* header */
+.fluid .header{height:auto;flex-wrap:wrap;gap:12px}
+.fluid .brand{gap:12px;min-width:0}
+.fluid .brand img{height:52px !important;margin-left:-10px}
+.fluid .divider{height:36px}
+.fluid .title{font-size:24px}
+.fluid .sub{font-size:13px}
+.fluid .chips{width:100%;flex-wrap:wrap;gap:8px}
+.fluid .tabs{flex:1 1 100%;gap:2px;overflow-x:auto;scrollbar-width:none}
+.fluid .tabs::-webkit-scrollbar{display:none}
+.fluid .tab{flex:1 0 auto;text-align:center;padding:8px 6px;font-size:13px}
+.fluid .chip,.fluid .status{padding:6px 12px;font-size:13px}
+.fluid .sync{font-size:13px}
+
+/* shared page heading card + buttons */
+.fluid .draw-top{flex-direction:column;align-items:flex-start;gap:14px;padding:20px}
+.fluid .draw-title{font-size:30px}
+.fluid .draw-sub{font-size:15px}
+.fluid .draw-actions{flex-wrap:wrap;gap:12px}
+.fluid .draw-count{font-size:15px}
+.fluid .redraw-btn{height:46px;font-size:16px;padding:0 18px}
+.fluid .draw-player{height:52px;font-size:22px;padding:0 26px}
+.fluid .draw-btn{height:56px;font-size:22px;padding:0 28px}
+
+/* home */
+.fluid .hm{gap:16px}
+.fluid .sb-count.big{padding:20px 16px;gap:14px}
+.fluid .sb-count.big .sb-units{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%;max-width:560px}
+.fluid .sb-count.big .sb-unit{padding:12px 0;border-radius:14px}
+.fluid .sb-count.big .sb-num{font-size:44px}
+.fluid .sb-count.big .sb-ul{font-size:11px;margin-top:4px}
+.fluid .sb-count.big .sb-when{font-size:15px}
+.fluid .sb-count.big .sb-live{font-size:56px}
+.fluid .hm-teams{grid-template-columns:1fr !important;gap:16px}
+.fluid .hm-team{padding:20px;gap:14px}
+.fluid .hm-logo{max-height:150px}
+.fluid .hm-name{font-size:40px}
+.fluid .hm-fire{height:64px;padding:0 24px;margin-top:0}
+.fluid .hm-emoji{font-size:30px}
+.fluid .hm-count{font-size:36px}
+
+/* teams */
+.fluid .now{height:auto;flex-direction:column;align-items:flex-start;gap:10px;padding:16px 18px}
+.fluid .now-left{flex-wrap:wrap;gap:10px}
+.fluid .now-name{font-size:32px;white-space:normal}
+.fluid .now-right{font-size:17px;white-space:normal}
+.fluid .tag{font-size:18px}
+.fluid .tag.sm{font-size:14px}
+.fluid .teams{grid-template-columns:1fr !important;gap:16px}
+.fluid .tcard{padding:18px;gap:14px;overflow:visible}
+.fluid .t-head{flex-wrap:wrap}
+.fluid .t-name{font-size:28px;gap:10px}
+.fluid .t-logo{height:44px}
+.fluid .t-manager{font-size:15px;margin-top:-4px}
+.fluid .t-stats{gap:10px;padding-bottom:14px}
+.fluid .t-big{font-size:30px}
+.fluid .t-mid{font-size:22px}
+.fluid .t-list{overflow:visible}
+.fluid .t-row{height:48px;padding:0 12px;gap:10px}
+.fluid .t-player{font-size:17px}
+.fluid .t-price{font-size:18px}
+.fluid .t-pos{width:52px}
+.fluid .t-poslabel{font-size:11px}
+
+/* live bid (player, then bid panel, then history, then purses) */
+.fluid .main{flex-direction:column;gap:16px}
+.fluid .player,.fluid .bidpanel{width:auto;flex:0 0 auto}
+.fluid .player{order:0}
+.fluid .bidpanel{order:1}
+.fluid .middle{order:2}
+.fluid .art,.fluid .art svg{height:260px}
+.fluid .pinfo{padding:18px;gap:16px}
+.fluid .pname{font-size:40px}
+.fluid .pos{font-size:24px;padding:6px 14px}
+.fluid .upnext{font-size:14px;padding-top:14px}
+.fluid .mystery-q{font-size:110px}
+.fluid .mystery-hint{font-size:13px;text-align:center;padding:0 12px}
+.fluid .history{padding:18px;overflow:visible}
+.fluid .row{padding:10px 14px}
+.fluid .row .team{font-size:16px}
+.fluid .row .amt{font-size:22px}
+.fluid .bidpanel{padding:18px;gap:18px}
+.fluid .base .cond{font-size:24px}
+.fluid .bid{font-size:72px}
+.fluid .leader{font-size:18px}
+.fluid .step{height:44px;font-size:15px}
+.fluid .teambtn{height:auto;min-height:64px;padding:8px 6px;font-size:15px}
+.fluid .tb-name{white-space:normal;text-align:center;line-height:1.15}
+.fluid .actions{margin-top:0}
+.fluid .sold-btn{height:56px;font-size:24px}
+.fluid .ghost{height:56px;font-size:15px}
+.fluid .stamp-wrap{top:110px !important}
+.fluid .stamp{padding:10px 22px;border-width:4px}
+.fluid .stamp .big{font-size:56px !important}
+.fluid .stamp .small{font-size:16px}
+.fluid .purses{height:auto;grid-template-columns:1fr !important;gap:10px}
+.fluid .purse{padding:12px 16px;gap:4px}
+.fluid .purse .n{font-size:16px;flex-wrap:wrap}
+.fluid .purse .left{font-size:26px}
+
+/* icon draw */
+.fluid .draw-grid{grid-template-columns:1fr !important;gap:16px}
+.fluid .dcard{padding:18px;gap:14px}
+.fluid .d-slot{min-height:200px;padding:16px}
+.fluid .d-q{font-size:110px}
+.fluid .d-wait .d-q{font-size:90px}
+.fluid .d-name{font-size:52px}
+.fluid .pool{height:auto;flex-wrap:wrap;gap:8px}
+.fluid .pool-chip{font-size:15px;padding:8px 14px}
+
+/* auction finished */
+.fluid .end{padding:28px 18px;gap:28px}
+.fluid .end-title{font-size:60px}
+.fluid .end-sub{font-size:17px}
+.fluid .end-teams{grid-template-columns:1fr !important;gap:14px}
+.fluid .end-team{padding:16px 18px}
+.fluid .end-team-name{font-size:26px}
+.fluid .end-num{font-size:22px}
+.fluid .end-btn{height:58px;font-size:24px;padding:0 30px}
+
+/* fixtures, points, stats */
+.fluid .fx-main,.fluid .pt-main,.fluid .st-main{grid-template-columns:minmax(0,1fr);gap:16px}
+.fluid .fx-side{gap:16px}
+.fluid .fx-list,.fluid .fx-table,.fluid .fx-final,.fluid .pt-results,.fluid .st-board{padding:18px;overflow:visible}
+.fluid .fx-rows,.fluid .pt-rlist,.fluid .st-rows{overflow:visible}
+.fluid .fx-row{grid-template-columns:34px minmax(0,1fr) auto minmax(0,1fr);height:auto;min-height:64px;padding:10px 12px;gap:8px}
+.fluid .fx-act{grid-column:1/-1;justify-content:center}
+.fluid .fx-act:empty{display:none}
+.fluid .fx-act .fx-link{padding:0;font-size:13px}
+.fluid .fx-no{font-size:15px}
+.fluid .fx-team{font-size:19px;gap:8px}
+.fluid .fx-team .dot{width:10px;height:10px}
+.fluid .fx-tname{white-space:normal;line-height:1.05}
+.fluid .fx-team.right .fx-tname{text-align:right}
+.fluid .fx-vs{font-size:16px}
+.fluid .fx-score{font-size:30px;gap:6px}
+.fluid .fx-colon{font-size:20px}
+.fluid .fx-wait{font-size:28px}
+.fluid .fx-table table{font-size:16px;border-spacing:0 6px}
+.fluid .fx-table th{font-size:11px;padding:0 3px}
+.fluid .fx-table td{padding:10px 3px}
+.fluid .fx-table td.pos{font-size:18px}
+.fluid .fx-table td.pts{font-size:22px}
+.fluid .fx-tteam{gap:6px;white-space:normal;line-height:1.1}
+.fluid .fx-fmatch{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
+.fluid .fx-tbd{font-size:18px}
+.fluid .fx-note{font-size:14px}
+.fluid .fx-champ-name{font-size:40px;text-align:center}
+.fluid .fx-empty{padding:28px 18px;text-align:center}
+.fluid .fx-soon{gap:18px}
+.fluid .fx-soon-title{font-size:48px}
+.fluid .fx-soon-sub{font-size:16px}
+.fluid .fx-soon-teams{flex-wrap:wrap;justify-content:center;gap:8px}
+.fluid .pt-card{padding:18px}
+.fluid .pt-title,.fluid .st-title{font-size:26px !important}
+.fluid .pt-big table{font-size:18px;border-spacing:0 8px}
+.fluid .pt-big th{font-size:11px}
+.fluid .pt-big td{padding:12px 3px}
+.fluid .pt-big td.pos{font-size:20px}
+.fluid .pt-big td.pts{font-size:24px}
+.fluid .pt-big .fx-tteam{font-size:18px;gap:8px}
+.fluid .pt-big .fx-tteam .dot{width:12px;height:12px}
+.fluid .pt-key{margin-top:0}
+.fluid .pt-name{font-size:17px;white-space:normal}
+.fluid .pt-fmatch .pt-name{font-size:20px}
+.fluid .pt-r{grid-template-columns:34px minmax(0,1fr) 56px minmax(0,1fr);height:auto;min-height:48px;padding:8px 12px}
+.fluid .pt-rs{font-size:20px}
+.fluid .st-row{grid-template-columns:30px minmax(0,1fr) 48px 48px;height:auto;min-height:60px;padding:8px 12px;gap:8px}
+.fluid .st-headrow{min-height:0;padding-bottom:0;font-size:11px}
+.fluid .st-player{flex-wrap:wrap;gap:4px 8px}
+.fluid .st-name{font-size:18px}
+.fluid .st-team{font-size:13px}
+.fluid .st-rank{font-size:20px}
+.fluid .st-val{font-size:28px}
+.fluid .st-other{font-size:20px}
+
+/* admin */
+.fluid .ad-shell{flex-direction:column;gap:16px}
+.fluid .sb{width:auto;flex:0 0 auto;gap:16px}
+.fluid .sb-nav{padding:14px;flex-direction:row;flex-wrap:wrap;gap:6px;overflow:visible}
+.fluid .sb-nav .label{width:100%}
+.fluid .sb-sec{flex-direction:row;flex-wrap:wrap;width:100%}
+.fluid .sb-nav .sb-group{margin:8px 0 0}
+.fluid .sb-link{width:auto;height:38px;padding:0 14px;font-size:18px;border-color:var(--line2)}
+.fluid .sb .sb-count{padding:14px 16px}
+.fluid .ad-body{gap:16px}
+.fluid .ad-setup{flex-direction:column;align-items:stretch;padding:16px;gap:16px}
+.fluid .ad-names,.fluid .ad-fix{flex-wrap:wrap;gap:10px}
+.fluid .ad-names>.label,.fluid .ad-fix>.label{width:100%}
+.fluid .ad-name{flex:1 1 100%}
+.fluid .ad-body .ad-name .ad-input{width:auto;flex:1 1 auto;min-width:0}
+.fluid .ad-fix .draw-player{height:48px;font-size:20px}
+.fluid .ad-fix .redraw-btn{height:auto;min-height:48px;padding:8px 18px;text-align:left}
+.fluid .ad-body .ad-main{grid-template-columns:minmax(0,1fr);gap:16px}
+.fluid .ad-list,.fluid .ad-editor,.fluid .ad-board{padding:16px;overflow:visible}
+.fluid .ad-board{flex:0 0 auto}
+.fluid .ad-stats{gap:16px}
+.fluid .ad-match{height:auto;min-height:56px;padding:8px 12px}
+.fluid .ad-mteams{font-size:15px;flex-wrap:wrap}
+.fluid .ad-head{flex-wrap:wrap;gap:8px}
+.fluid .ad-label{font-size:22px}
+.fluid .ad-scoreline{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;padding:14px}
+.fluid .ad-team{font-size:18px;gap:8px;min-width:0;overflow-wrap:anywhere}
+.fluid .ad-team .dot{width:12px;height:12px}
+.fluid .ad-score{font-size:44px}
+.fluid .ad-sides{grid-template-columns:minmax(0,1fr);gap:14px}
+.fluid .ad-side{padding:14px}
+.fluid .ad-gtext{font-size:16px;flex-wrap:wrap}
+.fluid .ad-input{font-size:16px}
+.fluid .ad-actions{margin-top:0}
+.fluid .ad-save{font-size:20px}
+.fluid .sf{flex:0 0 auto}
+.fluid .sf-bar{padding:12px 16px;flex-wrap:wrap;gap:8px}
+.fluid .sf-frame{flex:0 0 auto;height:auto;aspect-ratio:16/9}
+.fluid .lg-wrap{padding:28px 18px}
+.fluid .lg-form{width:100%;max-width:480px}
+.fluid .lg-input{height:52px;font-size:17px}
+
+/* tablets: team cards side by side again */
+@media (min-width:720px){
+  .fluid .hm-teams,.fluid .draw-grid,.fluid .end-teams,.fluid .purses{grid-template-columns:repeat(3,minmax(0,1fr)) !important}
+  .fluid .st-main{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fluid .hm-logo{max-height:120px}
+}
+/* small phones: drop the goals-for / goals-against columns so the table fits */
+@media (max-width:520px){
+  .fluid .fx-table .opt{display:none}
+}

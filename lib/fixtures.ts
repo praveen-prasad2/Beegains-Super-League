@@ -59,6 +59,20 @@ export function drawFixtures(prev: Pair[] | null): Pair[] {
   return [...pairs, ...pairs.map(([x, y]) => [y, x] as Pair)];
 }
 
+/**
+ * Double round-robin in plain team order instead of a random draw:
+ * A v B, A v C, B v C, then the return legs B v A, C v A, C v B.
+ */
+export function fixedFixtures(): Pair[] {
+  const n = CONFIG.teams.length;
+  const round1: Pair[] = [];
+  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) round1.push([i, j]);
+  return [...round1, ...round1.map(([x, y]) => [y, x] as Pair)];
+}
+
+/** Team letter for a team index: 0 → A, 1 → B, … */
+export const teamLetter = (i: number) => String.fromCharCode(65 + i);
+
 export type Row = { team: number; p: number; w: number; d: number; l: number; gf: number; ga: number; gd: number; pts: number };
 
 /** Points table, sorted: points, goal difference, goals scored, head-to-head points, then team order. */

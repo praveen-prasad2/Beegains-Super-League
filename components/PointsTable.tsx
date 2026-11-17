@@ -20,8 +20,8 @@ export default function PointsTable({ tour, big = false }: { tour: Tournament; b
             <th>W</th>
             <th>D</th>
             <th>L</th>
-            <th>GF</th>
-            <th>GA</th>
+            <th className="opt">GF</th>
+            <th className="opt">GA</th>
             <th>GD</th>
             <th>Pts</th>
           </tr>
@@ -41,8 +41,8 @@ export default function PointsTable({ tour, big = false }: { tour: Tournament; b
               <td>{r.w}</td>
               <td>{r.d}</td>
               <td>{r.l}</td>
-              <td>{r.gf}</td>
-              <td>{r.ga}</td>
+              <td className="opt">{r.gf}</td>
+              <td className="opt">{r.ga}</td>
               <td>{r.gd > 0 ? `+${r.gd}` : r.gd}</td>
               <td className="pts cond">{r.pts}</td>
             </tr>

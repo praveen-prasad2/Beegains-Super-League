@@ -10,6 +10,8 @@ import {
   FIX_STEP,
   allMatches,
   drawFixtures,
+  fixedFixtures,
+  teamLetter,
   topAssists,
   topScorers,
 } from '@/lib/fixtures';
@@ -260,6 +262,13 @@ function Setup() {
     setMsg('Saved');
   };
   const draw = () => dispatch({ type: 'drawFixtures', order: drawFixtures(T.prevOrder), at: Date.now() });
+  const fixed = fixedFixtures();
+  const fixedLabel = fixed.slice(0, fixed.length / 2).map(([h, a]) => teamLetter(h) + teamLetter(a)).join(', ');
+  const drawFixed = () => {
+    const list = fixed.map(([h, a], k) => `M${k + 1}  ${teams[h]} v ${teams[a]}`).join('\n');
+    if (confirm(`Set the fixtures in this order?\n\n${list}`))
+      dispatch({ type: 'drawFixtures', order: fixed, at: Date.now() });
+  };
   const reset = () => {
     const warn = played
       ? `Reset the fixtures? ${played} result(s), the points table, the final and all goal/assist stats will be cleared.`
@@ -302,9 +311,19 @@ function Setup() {
             </button>
           </>
         ) : (
-          <button type="button" className="draw-player cond" onClick={draw}>
-            Draw fixtures
-          </button>
+          <>
+            <button type="button" className="draw-player cond" onClick={draw}>
+              Draw fixtures
+            </button>
+            <button
+              type="button"
+              className="redraw-btn"
+              onClick={drawFixed}
+              title="A v B, A v C, B v C, then the return legs in the same order"
+            >
+              Fixed order · {fixedLabel}
+            </button>
+          </>
         )}
       </div>
     </div>
