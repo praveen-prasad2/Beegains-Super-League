@@ -47,9 +47,9 @@ export const POSITION_RENAMES: Record<string, string> = { DEF: 'CB', FWD: 'ST' }
 /** Fire reactions each team starts with on the Home screen (same order as teams). */
 export const REACTION_BASE = [0, 0, 0];
 
-/** Home-screen and admin countdown target: 25 November 2026, 7:00 PM IST. */
-export const COUNTDOWN_AT = new Date('2026-11-25T19:00:00+05:30').getTime();
-export const COUNTDOWN_LABEL = '25 Nov · 7:00 PM';
+/** Home-screen and admin countdown target: 27 November 2026, 7:00 PM IST. */
+export const COUNTDOWN_AT = new Date('2026-11-27T19:00:00+05:30').getTime();
+export const COUNTDOWN_LABEL = '27 Nov · 7:00 PM';
 
 export const STORAGE_KEY = 'bsl-2026-auction';
 
