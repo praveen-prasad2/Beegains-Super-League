@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Countdown from './Countdown';
 
 /** Screens the admin panel can show on its right side, embedded live. */
@@ -21,14 +20,6 @@ const GROUPS = ['Screens', 'Auction'] as const;
 
 /** Admin panel's left sidebar: picks what the right side shows, then the countdown. */
 export default function AdminSidebar({ view, onView }: { view: AdminView; onView: (v: AdminView) => void }) {
-  const [msg, setMsg] = useState('');
-
-  const resetReactions = async () => {
-    if (!confirm('Reset the fire reactions of every team to 0?')) return;
-    const r = await fetch('/api/reactions', { method: 'DELETE' }).catch(() => null);
-    setMsg(r?.ok ? 'Reactions reset' : 'Reset failed');
-    setTimeout(() => setMsg(''), 3000);
-  };
   const logout = async () => {
     await fetch('/api/admin/logout', { method: 'POST' }).catch(() => {});
     location.reload(); // /admin re-renders as the login screen
@@ -59,13 +50,9 @@ export default function AdminSidebar({ view, onView }: { view: AdminView; onView
         ))}
         <div className="sb-sec">
           <span className="label sb-group">Admin</span>
-          <button type="button" className="sb-link cond" onClick={resetReactions}>
-            Reset reactions
-          </button>
           <button type="button" className="sb-link sb-out cond" onClick={logout}>
             Log out
           </button>
-          {msg && <span className={`ad-msg${msg === 'Reactions reset' ? ' ok' : ''}`}>{msg}</span>}
         </div>
       </nav>
       <Countdown />
