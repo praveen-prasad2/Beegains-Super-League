@@ -27,12 +27,70 @@ type Key = number | 'final';
 
 const Dot = ({ t }: { t: number }) => <span className="dot" style={{ background: TEAM_COLORS[t] }} />;
 
-/** Add-a-goal form for one side of the match. */
+/** Select value that switches a player picker to a typed name (guest or late signing). */
+const OTHER = '__other__';
+
+/** Player picker: a select of squad names, with "Other…" revealing a text box. */
+function PlayerSelect({
+  names,
+  value,
+  onChange,
+  placeholder,
+  none,
+  disabled,
+  label,
+}: {
+  names: string[];
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  /** Label of an empty choice (e.g. "No assist"); without it the placeholder can't be re-picked. */
+  none?: string;
+  disabled?: boolean;
+  label: string;
+}) {
+  const [typing, setTyping] = useState(false);
+  const custom = typing || (value !== '' && !names.includes(value));
+  return (
+    <div className="ad-pick">
+      <select
+        className="ad-input"
+        aria-label={label}
+        disabled={disabled}
+        value={custom ? OTHER : value}
+        onChange={(e) => {
+          const v = e.target.value;
+          setTyping(v === OTHER);
+          onChange(v === OTHER ? '' : v);
+        }}
+      >
+        {none ? <option value="">{none}</option> : <option value="" disabled>{placeholder}</option>}
+        {names.map((n) => (
+          <option key={n} value={n}>
+            {n}
+          </option>
+        ))}
+        <option value={OTHER}>Other (type a name)…</option>
+      </select>
+      {custom && !disabled && (
+        <input
+          className="ad-input"
+          aria-label={`${label}: name`}
+          placeholder="Type the player's name"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          autoFocus
+        />
+      )}
+    </div>
+  );
+}
+
+/** Add-a-goal form for one side of the match: scorer and assist are picked from the squads. */
 function GoalForm({
   squad,
   oppSquad,
   onAdd,
-  id,
 }: {
   squad: string[];
   oppSquad: string[];
@@ -42,48 +100,47 @@ function GoalForm({
   const [scorer, setScorer] = useState('');
   const [assist, setAssist] = useState('');
   const [og, setOg] = useState(false);
+  // Remount the pickers after each goal / own-goal toggle so "Other" text boxes reset too.
+  const [round, setRound] = useState(0);
   const add = () => {
     if (!scorer.trim()) return;
     onAdd({ scorer: scorer.trim(), assist: og || !assist.trim() ? null : assist.trim(), og: og || undefined });
     setScorer('');
     setAssist('');
     setOg(false);
+    setRound((r) => r + 1);
   };
-  const names = og ? oppSquad : squad;
   return (
     <div className="ad-form">
-      <datalist id={`${id}-sc`}>
-        {names.map((n) => (
-          <option key={n} value={n} />
-        ))}
-      </datalist>
-      <datalist id={`${id}-as`}>
-        {squad
-          .filter((n) => n !== scorer)
-          .map((n) => (
-            <option key={n} value={n} />
-          ))}
-      </datalist>
-      <input
-        className="ad-input"
-        list={`${id}-sc`}
-        placeholder={og ? 'Own goal by (opponent)' : 'Scorer'}
+      <PlayerSelect
+        key={`sc-${round}-${og}`}
+        label={og ? 'Own goal by' : 'Scorer'}
+        names={og ? oppSquad : squad}
         value={scorer}
-        onChange={(e) => setScorer(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && add()}
+        onChange={setScorer}
+        placeholder={og ? 'Own goal by (opponent)' : 'Select scorer'}
       />
-      <input
-        className="ad-input"
-        list={`${id}-as`}
-        placeholder={og ? 'No assist on own goal' : 'Assist (optional)'}
+      <PlayerSelect
+        key={`as-${round}`}
+        label="Assist"
+        names={squad.filter((n) => n !== scorer)}
         value={og ? '' : assist}
+        onChange={setAssist}
+        placeholder="Assist"
+        none={og ? 'No assist on own goal' : 'No assist'}
         disabled={og}
-        onChange={(e) => setAssist(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && add()}
       />
       <div className="ad-form-row">
         <label className="ad-og">
-          <input type="checkbox" checked={og} onChange={(e) => setOg(e.target.checked)} /> Own goal
+          <input
+            type="checkbox"
+            checked={og}
+            onChange={(e) => {
+              setOg(e.target.checked);
+              setScorer('');
+            }}
+          />{' '}
+          Own goal
         </label>
         <button type="button" className="ad-add" onClick={add} disabled={!scorer.trim()}>
           + Add goal

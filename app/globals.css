@@ -347,6 +347,8 @@ button:disabled{cursor:not-allowed;opacity:.4}
 .ad-input{height:46px;padding:0 14px;border-radius:12px;border:1px solid var(--line2);background:var(--bg);color:var(--text);font-family:inherit;font-size:17px;outline:none}
 .ad-input:focus{border-color:var(--accent)}
 .ad-input:disabled{opacity:.4}
+.ad-pick{display:flex;flex-direction:column;gap:6px}
+.ad-pick select.ad-input,.ad-pick .ad-input{width:100%}
 .ad-form-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .ad-og{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--muted);font-weight:600;cursor:pointer}
 .ad-og input{width:18px;height:18px;accent-color:var(--sold)}
@@ -732,6 +734,7 @@ html.fluid #stage{position:relative;left:auto;top:auto;width:100%;height:auto;mi
 .fluid .ad-side{padding:14px}
 .fluid .ad-gtext{font-size:16px;flex-wrap:wrap}
 .fluid .ad-input{font-size:16px}
+.fluid .ad-pick .ad-input{height:48px}
 .fluid .ad-actions{margin-top:0}
 .fluid .ad-save{font-size:20px}
 .fluid .sf{flex:0 0 auto}
