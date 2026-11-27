@@ -22,9 +22,9 @@ export const CONFIG = {
 
 /** Team logos in /public with their pixel size (same order as teams); null = no logo yet, the team's colour dot is shown instead. */
 export const TEAM_LOGOS: ({ src: string; w: number; h: number } | null)[] = [
-  { src: '/padakkalam.png', w: 1448, h: 1086 },
+  { src: '/padakkalam-crest.png', w: 505, h: 506 },
   { src: '/veltaro.png', w: 2454, h: 3788 },
-  { src: '/ponnikkara-logo.png', w: 1196, h: 507 }, // ponnikkara.png with its empty margins trimmed
+  { src: '/ponnikkara-crest.png', w: 1078, h: 1156 }, // shield cut out of its dark background
 ];
 
 export const TEAM_COLORS = ['#4C9AFF', '#FF9F43', '#2EC4B6', '#E05BC1', '#F4D35E', '#8C7AE6', '#FF6B6B', '#7BD389'];
@@ -44,9 +44,13 @@ export const POSITION_ORDER = ['GK', 'CB', 'RB', 'LB', 'MID', 'ST'];
 /** Old position codes from earlier saves → current codes. */
 export const POSITION_RENAMES: Record<string, string> = { DEF: 'CB', FWD: 'ST' };
 
-/** Home-screen and admin countdown target: 27 November 2026, 7:00 PM IST. */
-export const COUNTDOWN_AT = new Date('2026-11-27T19:00:00+05:30').getTime();
-export const COUNTDOWN_LABEL = '27 Nov · 7:00 PM';
+/** Home-screen and admin countdown target: 27 November 2026, 6:00 PM IST. */
+export const COUNTDOWN_AT = new Date('2026-11-27T18:00:00+05:30').getTime();
+export const COUNTDOWN_LABEL = '27 Nov · 6:00 PM';
+
+/** Winner predictions close at 27 November 2026, 4:00 PM IST (enforced by the server too). */
+export const PREDICT_DEADLINE = new Date('2026-11-27T16:00:00+05:30').getTime();
+export const PREDICT_DEADLINE_LABEL = '4:00 PM, 27 Nov';
 
 export const STORAGE_KEY = 'bsl-2026-auction';
 

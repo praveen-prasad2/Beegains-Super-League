@@ -463,6 +463,53 @@ button:disabled{cursor:not-allowed;opacity:.4}
 .t-row.open .t-pos{opacity:.45}
 .t-poslabel{font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);white-space:nowrap}
 
+/* Winner prediction: public form + admin list and draw */
+.pr-wrap{overflow:auto}
+.pr-wrap .lg-form{padding:24px 0}
+.pr-hint{font-size:15px;font-weight:600;color:var(--sold)}
+.pr-note{font-size:15px;color:var(--muted);font-weight:500}
+.pr-scores{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:end;gap:14px}
+.pr-side{display:flex;flex-direction:column;gap:6px;min-width:0}
+.pr-side-name{font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr-dash{font-size:40px;font-weight:800;color:var(--faint);line-height:60px}
+.ad-input[aria-invalid=true]{border-color:var(--sold)}
+select.ad-input{cursor:pointer}
+.pr-pick{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:12px 20px;padding:22px 24px;border-radius:18px;background:var(--panel2)}
+.pr-team{display:flex;align-items:center;gap:12px;font-weight:800;font-size:34px;text-transform:uppercase}
+.pr-score{font-weight:800;font-size:34px;color:var(--accent)}
+.pr-pens{font-family:var(--font-inter),sans-serif;font-size:15px;color:var(--muted);font-weight:600}
+.pr-phone{grid-column:1/-1;font-size:15px;color:var(--faint)}
+.pr-another{align-self:flex-start;padding-left:0}
+.pr-bar{gap:28px}
+.pr-total{display:flex;align-items:baseline;gap:14px}
+.pr-total-n{font-size:44px;font-weight:800;line-height:1;color:var(--accent)}
+.pr-counts{display:flex;gap:10px;flex:1 1 auto;flex-wrap:wrap}
+.pr-count{display:flex;align-items:center;gap:10px;height:48px;padding:0 16px;border-radius:12px;border:1px solid var(--line2);background:var(--panel2);color:var(--text);font-size:16px;font-weight:700}
+.pr-count.on{border:2px solid var(--accent)}
+.pr-count-n{font-size:24px;font-weight:800;color:var(--accent)}
+.pr-main{display:grid;grid-template-columns:1fr 560px;gap:28px;flex:1 1 auto;min-height:0}
+.pr-list{gap:14px}
+.pr-rows{display:flex;flex-direction:column;gap:6px;min-height:0}
+.pr-row{display:grid;grid-template-columns:44px minmax(0,1.3fr) 140px minmax(0,1.2fr) 110px 32px;align-items:center;gap:12px;min-height:50px;padding:6px 12px;border-radius:12px;background:var(--panel2);font-size:16px}
+.pr-row.won{outline:2px solid var(--accent);background:#1E2E17}
+.pr-headrow{background:none;min-height:0;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.pr-name{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr-ph{color:var(--muted);font-variant-numeric:tabular-nums}
+.pr-champ{display:flex;align-items:center;gap:8px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr-champ .dot,.pr-reveal-sub .dot{width:10px;height:10px;border-radius:3px}
+.pr-sc{font-size:19px;font-weight:800}
+.pr-draw .lg-field .ad-input{width:100%}
+.pr-pool{display:flex;flex-direction:column;gap:10px;padding:16px 18px;border:1px solid var(--line);border-radius:16px}
+.pr-pool-n{font-size:17px;color:var(--muted)}
+.pr-pool-n b{font-size:24px;color:var(--text)}
+.pr-reveal{flex:1 1 auto;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px;border-radius:18px;background:var(--panel2);text-align:center}
+.pr-reveal .d-q{font-size:140px}
+.pr-reveal-name{font-weight:800;font-size:64px;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}
+.pr-reveal.rolling .pr-reveal-name{color:var(--muted)}
+.pr-reveal.done{border:2px solid var(--accent)}
+.pr-reveal.done .pr-reveal-name{color:var(--accent)}
+.pr-reveal-sub{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;font-size:15px;color:var(--muted);font-weight:500}
+
 /* =====================================================================
    Responsive: phones, tablets and narrow windows (< 1100px wide).
    Stage.tsx adds `fluid` to <html> there; the scaled 1920x1080 stage is
@@ -693,6 +740,29 @@ html.fluid #stage{position:relative;left:auto;top:auto;width:100%;height:auto;mi
 .fluid .lg-wrap{padding:28px 18px}
 .fluid .lg-form{width:100%;max-width:480px}
 .fluid .lg-input{height:52px;font-size:17px}
+
+/* winner prediction */
+.fluid .pr-wrap{padding:8px 18px}
+.fluid .pr-wrap .lg-form{padding:20px 0}
+.fluid .pr-dash{font-size:28px;line-height:52px}
+.fluid .pr-pick{padding:16px;gap:8px 14px}
+.fluid .pr-team,.fluid .pr-score{font-size:24px}
+.fluid .pr-bar{flex-direction:column;align-items:stretch}
+.fluid .pr-total-n{font-size:34px}
+.fluid .pr-count{flex:1 1 auto;height:44px}
+.fluid .pr-main{grid-template-columns:minmax(0,1fr);gap:16px}
+.fluid .pr-list,.fluid .pr-draw{padding:16px;overflow:visible}
+.fluid .pr-headrow{display:none}
+.fluid .pr-row{grid-template-columns:32px minmax(0,1fr) auto 32px;grid-template-areas:'no name sc x' 'no ph champ x';row-gap:2px;padding:8px 10px}
+.fluid .pr-row>:nth-child(1){grid-area:no}
+.fluid .pr-name{grid-area:name}
+.fluid .pr-ph{grid-area:ph;font-size:14px}
+.fluid .pr-champ{grid-area:champ;font-size:14px;justify-content:flex-end}
+.fluid .pr-sc{grid-area:sc;text-align:right}
+.fluid .pr-row>.ad-x{grid-area:x}
+.fluid .pr-reveal{min-height:160px}
+.fluid .pr-reveal .d-q{font-size:96px}
+.fluid .pr-reveal-name{font-size:40px}
 
 /* tablets: team cards side by side again */
 @media (min-width:720px){

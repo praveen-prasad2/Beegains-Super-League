@@ -19,6 +19,7 @@ import { useAuction } from './AuctionProvider';
 import Header from './Header';
 import AdminSidebar, { type AdminView, SCREENS } from './AdminSidebar';
 import ScreenFrame from './ScreenFrame';
+import AdminPredictions from './AdminPredictions';
 import { useSpin } from './useSpin';
 import Stage from './Stage';
 
@@ -345,6 +346,7 @@ export default function AdminScreen() {
 
   let body: React.ReactNode;
   if (screen) body = <ScreenFrame key={screen.id} href={screen.href} label={screen.label} />;
+  else if (view === 'predictions') body = <AdminPredictions />;
   else if (!T.order.length)
     body = (
       <>

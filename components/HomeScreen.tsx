@@ -18,7 +18,7 @@ export default function HomeScreen() {
         <div className="hm-teams" style={{ gridTemplateColumns: `repeat(${teams.length},minmax(0,1fr))` }}>
           {teams.map((t, i) => (
             <div key={i} className="card hm-team" style={{ borderTopColor: TEAM_COLORS[i] }}>
-              <span className="label">Team {i + 1}</span>
+              <span className="label">{t}</span>
               {TEAM_LOGOS[i] ? (
                 <Image
                   className="hm-logo"

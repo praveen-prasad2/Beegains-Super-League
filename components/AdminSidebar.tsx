@@ -9,12 +9,13 @@ export const SCREENS = [
   { id: 'fixtures', href: '/fixtures', label: 'Fixtures', group: 'Screens' },
   { id: 'points', href: '/points', label: 'Points', group: 'Screens' },
   { id: 'stats', href: '/stats', label: 'Stats', group: 'Screens' },
+  { id: 'predict', href: '/predict', label: 'Predict', group: 'Screens' },
   { id: 'draw', href: '/draw', label: 'Icon draw', group: 'Auction' },
   { id: 'live', href: '/live', label: 'Live bid', group: 'Auction' },
 ] as const;
 
-/** 'results' is the admin's own result-entry view; the rest are embedded screens. */
-export type AdminView = 'results' | (typeof SCREENS)[number]['id'];
+/** 'results' and 'predictions' are the admin's own views; the rest are embedded screens. */
+export type AdminView = 'results' | 'predictions' | (typeof SCREENS)[number]['id'];
 
 const GROUPS = ['Screens', 'Auction'] as const;
 
@@ -42,6 +43,7 @@ export default function AdminSidebar({ view, onView }: { view: AdminView; onView
       <nav className="card sb-nav" aria-label="Admin views">
         <span className="label">Manage</span>
         {item('results', 'Results')}
+        {item('predictions', 'Predictions')}
         {GROUPS.map((g) => (
           <div key={g} className="sb-sec">
             <span className="label sb-group">{g}</span>

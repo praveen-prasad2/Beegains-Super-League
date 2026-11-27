@@ -16,6 +16,7 @@ export const TABS = [
   { href: '/fixtures', label: 'Fixtures' },
   { href: '/points', label: 'Points' },
   { href: '/stats', label: 'Stats' },
+  { href: '/predict', label: 'Predict' },
   { href: '/admin', label: 'Admin' },
 ];
 
